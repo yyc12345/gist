@@ -156,7 +156,7 @@ WORLD_MATRIX（世界变换矩阵）表征物体的移动，旋转和缩放，�
 |21|P_Modul_37|
 |22|P_Modul_41|
 
-### mesh.bm
+## mesh.bm
 
 `mesh.bm`记录了本文档中所有网格的信息。
 
@@ -174,8 +174,11 @@ WORLD_MATRIX（世界变换矩阵）表征物体的移动，旋转和缩放，�
 ### V_COUNT，VT_COUNT，VN_COUNT
 
 V_COUNT表示V_LIST中组的个数
+
 VT_COUNT表示VT_LIST中组的个数
+
 VN_COUNT表示VN_LIST中组的个数
+
 FACE_COUNT表示FACE_LIST中组的个数
 
 ### V_LIST
@@ -192,7 +195,7 @@ FACE_COUNT表示FACE_LIST中组的个数
 
 ### FACE_LIST
 
-面列表，BM文件中只支持三角面。每一组数据由9个连续的`unsigned int32_t`数据进行存储。存储顺序与obj文件格式中的f语句是一致的：
+面列表，BM文件中只支持三角面。每一个面的存储格式如下：
 
 |助记符|类型|
 |:---|:---|
@@ -208,11 +211,11 @@ FACE_COUNT表示FACE_LIST中组的个数
 |USE_MATERIAL|bool|
 |MATERIAL_INDEX|unsigned int32_t|
 
-前9项与obj中的面语句一致：`f Vertex1/Texture1/Normal1 Vertex2/Texture2/Normal2 Vertex3/Texture3/Normal3`，用以构造一个面。而与obj语句不一致的是，这些编号是以0起使对应VT_LIST，VN_LIST，FACE_LIST中的项。
+前9项与obj中的面语句一致：`f Vertex1/Texture1/Normal1 Vertex2/Texture2/Normal2 Vertex3/Texture3/Normal3`，用以构造一个面。而与obj语句不一致的是，这些编号是以0起使对应VT_LIST，VN_LIST，FACE_LIST中的项，并且不支持倒序索引。
 
 USE_MATERIAL标识当前面是否使用材质，如果为是，MATERIAL_INDEX为一个从0起始的，指向`material.bm`中对应的材质；如果为否，则忽略MATERIAL_INDEX。
 
-### material.bm
+## material.bm
 
 `material.bm`记录了本文档中所有材质的信息。
 
@@ -227,7 +230,9 @@ USE_MATERIAL标识当前面是否使用材质，如果为是，MATERIAL_INDEX为
 ### KA，KD，KS
 
 KA表示材质的阴影色（ambient color），其中的数据依次表示R，G，B
+
 KD表示材质的固有色（diffuse color），其中的数据依次表示R，G，B
+
 KS表示材质的高光色（specular color），其中的数据依次表示R，G，B
 
 ### USE_TEXTURE
@@ -238,7 +243,7 @@ KS表示材质的高光色（specular color），其中的数据依次表示R，
 
 如果USE_TEXTURE为否，此项将被忽略，如果为是，此项为一个从0起始的，指向TEXTURE块中对应的贴图
 
-### texture.bm
+## texture.bm
 
 `texture.bm`记录了本文档中所有贴图的信息。
 
@@ -253,7 +258,7 @@ KS表示材质的高光色（specular color），其中的数据依次表示R，
 
 ### IS_EXTERNAL
 
-表示此贴图是否是外置的，如果贴图是外置的，那么在文件结构中的`Texture`文件夹将将存储贴图文件的原始格式（未解码格式），并且其文件名与`FILENAME`一致。
+表示此贴图是否是外置的，如果贴图是内置的，那么在文件结构中的`Texture`文件夹将将存储贴图文件的原始格式（未解码格式），并且其文件名与`FILENAME`一致。
 
 对于Ballance而言，所有贴图应均使用外置，这样不仅可以减小BM文件和导出后的NMO地图文件大小，也可以让地图可以引用用户自定义的材质包。除非地图中用到了特殊的自制贴图，否则不应当使用内置贴图。
 
