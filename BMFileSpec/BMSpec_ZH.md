@@ -31,7 +31,7 @@ BM文件，全称Ballance Map文件，一种专门用于在Virtools和其他3D�
         +-- etc...
 ```
 
-`file.bm`是最终导出的BM文件，本质上是一个zip文件，将下属各个文件进行压缩得到。zip使用DEFLATED压缩算法，压缩率为9。
+`file.bm`是最终导出的BM文件，本质上是一个zip文件，将下属各个文件进行压缩得到。zip使用DEFLATED压缩算法，压缩率为9。其余的BM文件均为二进制格式。
 
 `Texture`是一个文件夹，其下放置了用于内置贴图的原始贴图文件。
 
@@ -127,35 +127,7 @@ WORLD_MATRIX（世界变换矩阵）表征物体的移动，旋转和缩放，�
 
 ### MESH_INDEX
 
-指向物体的MESH，如果物体是COMPONENT类型，那么MESH_INDEX指代的是此物体在游戏内部的一个名为PH_Groups表中的所在行，表征机关类型。如果不是COMPONENT类型，那么将是一个从0开始的数字x，指向`mesh.bm`中的第x块，表示此物体将使用此MESH。
-
-游戏内部的PH_Groups表可在下面查看：
-
-|行号|机关类型|
-|:---|:---|
-|0|P_Extra_Life|
-|1|P_Extra_Point|
-|2|P_Trafo_Paper|
-|3|P_Trafo_Stone|
-|4|P_Trafo_Wood|
-|5|P_Ball_Paper|
-|6|P_Ball_Stone|
-|7|P_Ball_Wood|
-|8|P_Box|
-|9|P_Dome|
-|10|P_Modul_01|
-|11|P_Modul_03|
-|12|P_Modul_08|
-|13|P_Modul_17|
-|14|P_Modul_18|
-|15|P_Modul_19|
-|16|P_Modul_25|
-|17|P_Modul_26|
-|18|P_Modul_29|
-|19|P_Modul_30|
-|20|P_Modul_34|
-|21|P_Modul_37|
-|22|P_Modul_41|
+指向物体的MESH，如果物体是COMPONENT类型，那么MESH_INDEX指代的是此物体的机关编号，表征机关类型。如果不是COMPONENT类型，那么将是一个从0开始的数字x，指向`mesh.bm`中的第x块，表示此物体将使用此MESH。
 
 ## mesh.bm
 
