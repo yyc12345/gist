@@ -6,13 +6,13 @@ BM文件，全称Ballance Map文件，一种专门用于在Virtools和其他3D�
 
 本文档只是介绍BM文件格式，并不会介绍格式中某些项目具体会被导入导出程序如何应用，这是导入导出程序设计者定义行为。不同的导入导出程序将会有不一样的行为，因此请查看相关程序的设定文档。
 
-此标准当前版本为v1.0
+此标准最新的正式版本为v1.0。当前版本为1.1 beta版本，正在制定。
 
 ## 前言
 
 * 本标准中数字类型数据遵循小端序存储模式
 * 本标准中浮点数使用IEEE-754标准
-* 本标准字符串使用`char32_t`，文件存储使用UTF-32小端序模式，不需要附加BOM，末尾不需要存储`\0`
+* 本标准字符串使用`char32_t`，文件存储使用UTF-32小端序模式，不需要附加BOM
 * 本标准中，字符串的存储是先存储一个`unsigned int32_t`，标识整个字符串的长度（不是比特长度，而是字符个数），接下来再存储字符串
 * 本标准中，文件中的`bool`使用`unsigned int32_t`写入
 * 本标准中使用的坐标系为Virtools中的左手坐标系，与3ds Max和Blender坐标系的关系是：顶点或法向量交换yz坐标值，贴图坐标v取反，三角形面顶点逆序。
@@ -194,19 +194,27 @@ USE_MATERIAL标识当前面是否使用材质，如果为是，MATERIAL_INDEX为
 
 |助记符|类型|
 |:---|:---|
-|KA|float\[3\]|
-|KD|float\[3\]|
-|KS|float\[3\]|
+|AMBIENT|float\[3\]|
+|DIFFUSE|float\[3\]|
+|SPECULAR|float\[3\]|
+|EMISSIVE|float\[3\]|
+|SPECULAR_POWER|float|
 |USE_TEXTURE|bool|
 |MAP_KD|unsigned int32_t|
 
-### KA，KD，KS
+### AMBIENT，DIFFUSE，SPECULAR，EMISSIVE
 
-KA表示材质的阴影色（ambient color），其中的数据依次表示R，G，B
+AMBIENT表示材质的阴影色（ambient color），其中的数据依次表示R，G，B
 
-KD表示材质的固有色（diffuse color），其中的数据依次表示R，G，B
+DIFFUSE表示材质的固有色（diffuse color），其中的数据依次表示R，G，B
 
-KS表示材质的高光色（specular color），其中的数据依次表示R，G，B
+SPECULAR表示材质的高光色（specular color），其中的数据依次表示R，G，B
+
+EMISSIVE表示材质的自发光色（emissive color），其中的数据依次表示R，G，B
+
+### SPECULAR_POWER
+
+表示SPECULAR的强度，其含义对应Virtools中的Power滑条。
 
 ### USE_TEXTURE
 
