@@ -86,6 +86,8 @@ BM文件，全称Ballance Map文件，一种专门用于在Virtools和其他3D�
 |助记符|类型|
 |:---|:---|
 |IS_COMPONENT|bool|
+|IS_FORCED_NO_COMPONENT|bool|
+|IS_HIDDEN|bool|
 |WORLD_MATRIX|float\[4\]\[4\]|
 |MESH_INDEX|unsigned int32_t|
 
@@ -94,6 +96,14 @@ BM文件，全称Ballance Map文件，一种专门用于在Virtools和其他3D�
 IS_COMPONENT表述当前OBJECT是否是COMPONENT类型
 
 COMPONENT是BM文件中特有的一种物体类型，它只记录物体的移动，旋转和缩放，这对应着Ballance中的机关（PH），因为游戏会在初始化阶段用标准机关模型替换这些机关，因此这些机关物体不需要任何模型信息，只需要记录对应的世界变换矩阵即可。
+
+### IS_FORCED_NO_COMPONENT
+
+在IS_COMPONENT表述当前物件不是COMPONENT时，IS_FORCED_NO_COMPONENT有意义。如果为真，则此物件是本应归属于COMPONENT，但被强制指定为为非COMPONENT。如果为假则为普通非COMPONENT物件。
+
+### IS_HIDDEN
+
+表述当前物件是否不可见。
 
 ### WORLD_MATRIX
 
