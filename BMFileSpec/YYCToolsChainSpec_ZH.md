@@ -10,7 +10,7 @@ BM 文件标准只定义了文件中的一些字段的要求，并没有指明�
 
 ## COMPONENT标准
 
-如果一个物体是COMPONENT，其MESH_INDEX（机关编号）取决于游戏内部的一个名为PH_Groups表中的所在行
+如果一个物体是COMPONENT，其MESH_INDEX（机关编号）取决于游戏内部的一个名为PH_Groups表中的所在行。此外，一些特殊物件也会被计算在内，并附加在列表之后。
 
 在标准中，这些表达式通过判断名称是否以这些类型名开头来进行判断。
 
@@ -39,6 +39,10 @@ BM 文件标准只定义了文件中的一些字段的要求，并没有指明�
 |20|P_Modul_34|
 |21|P_Modul_37|
 |22|P_Modul_41|
+|23|PC_TwoFlames|
+|24|PE_Balloon|
+|25|PR_Resetpoint|
+|26|PS_FourFlames|
 
 ## 外置贴图标准
 
@@ -46,6 +50,8 @@ BM 文件标准只定义了文件中的一些字段的要求，并没有指明�
 
 检测方式是将贴图路径的文件名提取并全文比对，完全相等则视为外置贴图，因此如果你的某些内置贴图与下列有重名，请进行改名。
 
+* atari.avi
+* atari.bmp
 * Ball_LightningSphere1.bmp
 * Ball_LightningSphere2.bmp
 * Ball_LightningSphere3.bmp
@@ -125,6 +131,7 @@ BM 文件标准只定义了文件中的一些字段的要求，并没有指明�
 * Wood_Plain.bmp
 * Wood_Plain2.bmp
 * Wood_Raft.bmp
+
 
 ## 命名标准
 
