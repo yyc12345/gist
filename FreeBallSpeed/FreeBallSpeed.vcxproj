@@ -80,6 +80,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

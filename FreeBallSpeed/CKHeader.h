@@ -25,6 +25,34 @@ typedef enum CK_DEPENDENCIES_OPMODE {
 	CK_DEPENDENCIES_OPERATIONMODE = 0xF
 } CK_DEPENDENCIES_OPMODE;
 
+typedef enum CK_OBJECTCREATION_OPTIONS {
+	CK_OBJECTCREATION_NONAMECHECK = 0,
+	CK_OBJECTCREATION_REPLACE = 1,
+	CK_OBJECTCREATION_RENAME = 2,
+	CK_OBJECTCREATION_USECURRENT = 3,
+	CK_OBJECTCREATION_ASK = 4,
+	CK_OBJECTCREATION_FLAGSMASK = 0x0000000F,
+	CK_OBJECTCREATION_DYNAMIC = 0x00000010,
+	CK_OBJECTCREATION_ACTIVATE = 0x00000020,
+	CK_OBJECTCREATION_NONAMECOPY = 0x00000040
+} CK_OBJECTCREATION_OPTIONS;
+
+typedef enum CK_LOADMODE {
+	CKLOAD_INVALID = -1,// Use the existing object instead of loading 
+	CKLOAD_OK = 0,		// Ignore ( Name unicity is broken )
+	CKLOAD_REPLACE = 1,	// Replace the existing object (Not yet implemented)
+	CKLOAD_RENAME = 2,	// Rename the loaded object
+	CKLOAD_USECURRENT = 3,// Use the existing object instead of loading 
+} CK_LOADMODE, CK_CREATIONMODE;
+
+typedef enum CK_TEXTURE_SAVEOPTIONS {
+	CKTEXTURE_RAWDATA = 0,
+	CKTEXTURE_EXTERNAL = 1,
+	CKTEXTURE_IMAGEFORMAT = 2,
+	CKTEXTURE_USEGLOBAL = 3,
+	CKTEXTURE_INCLUDEORIGINALFILE = 4,
+} CK_TEXTURE_SAVEOPTIONS;
+
 
 #pragma region CK_ERROR
 
@@ -315,6 +343,7 @@ typedef long CKERROR;
 typedef long CK_CLASSID;
 typedef unsigned long CKDWORD;
 typedef int CKBOOL;
+typedef unsigned long CK_ID;
 
 typedef void CKContext;
 typedef void CKPluginManager;
@@ -339,6 +368,12 @@ typedef CKBOOL(__thiscall* CK2Def_CKDataArray_SetElementValue)(CKDataArray*, int
 typedef CKBOOL(__thiscall* CK2Def_CKDataArray_GetElementValue)(CKDataArray*, int, int, void*);
 typedef CKERROR(__cdecl* CK2Def_CKCreateContext)(CKContext**, HWND, int, unsigned long);
 typedef CKERROR(__cdecl* CK2Def_CKCloseContext)(CKContext*);
-
+typedef int(__thiscall* CK2Def_CKContext_GetObjectsCountByClassID)(CKContext*, CK_CLASSID);
+typedef CK_ID* (__thiscall* CK2Def_CKContext_GetObjectsListByClassID)(CKContext*, CK_CLASSID);
+typedef CKObject* (__thiscall* CK2Def_CKContext_GetObjectA)(CKContext*, CK_ID);
+typedef CKObject* (__thiscall* CK2Def_CKContext_CreateObject)(CKContext*, CK_CLASSID, CKSTRING, CK_OBJECTCREATION_OPTIONS, CK_LOADMODE*);	// default value: x NULL, CK_OBJECTCREATION_NONAMECHECK, NULL
+typedef CKERROR(__thiscall* CK2Def_CKLevel_AddObject)(CKLevel*, CKObject*);
+typedef void(__thiscall* CK2Def_CKContext_SetCurrentLevel)(CKContext*, CKLevel*);
+typedef void(__thiscall* CK2Def_CKContext_SetGlobalImagesSaveOptions)(CKContext*, CK_TEXTURE_SAVEOPTIONS);
 
 #endif

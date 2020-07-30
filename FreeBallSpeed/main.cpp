@@ -36,6 +36,13 @@ int main(int argc, char* argv[]) {
 	auto CK2_CKDataArray_GetElementValue = CK2Def_CKDataArray_GetElementValue(GetProcAddress(ck2, "?GetElementValue@CKDataArray@@QAEHHHPAX@Z"));
 	auto CK2_CKCreateContext = CK2Def_CKCreateContext(GetProcAddress(ck2, "?CKCreateContext@@YAJPAPAVCKContext@@PAXHK@Z"));
 	auto CK2_CKCloseContext = CK2Def_CKCloseContext(GetProcAddress(ck2, "?CKCloseContext@@YAJPAVCKContext@@@Z"));
+	auto CK2_CKContext_GetObjectsCountByClassID = CK2Def_CKContext_GetObjectsCountByClassID(GetProcAddress(ck2, "?GetObjectsCountByClassID@CKContext@@QAEHJ@Z"));
+	auto CK2_CKContext_GetObjectsListByClassID = CK2Def_CKContext_GetObjectsListByClassID(GetProcAddress(ck2, "?GetObjectsListByClassID@CKContext@@QAEPAKJ@Z"));
+	auto CK2_CKContext_GetObjectA = CK2Def_CKContext_GetObjectA(GetProcAddress(ck2, "?GetObjectA@CKContext@@QAEPAVCKObject@@K@Z"));
+	auto CK2_CKContext_CreateObject = CK2Def_CKContext_CreateObject(GetProcAddress(ck2, "?CreateObject@CKContext@@QAEPAVCKObject@@JPADW4CK_OBJECTCREATION_OPTIONS@@PAW4CK_LOADMODE@@@Z"));
+	auto CK2_CKLevel_AddObject = CK2Def_CKLevel_AddObject(GetProcAddress(ck2, "?AddObject@CKLevel@@QAEJPAVCKObject@@@Z"));
+	auto CK2_CKContext_SetCurrentLevel = CK2Def_CKContext_SetCurrentLevel(GetProcAddress(ck2, "?SetCurrentLevel@CKContext@@QAEXPAVCKLevel@@@Z"));
+	auto CK2_CKContext_SetGlobalImagesSaveOptions = CK2Def_CKContext_SetGlobalImagesSaveOptions(GetProcAddress(ck2, "?SetGlobalImagesSaveOptions@CKContext@@QAEXW4CK_TEXTURE_SAVEOPTIONS@@@Z"));
 
 	// init engine
 #define checkcode(err_reason) if (code != CK_OK) {std::cout << err_reason << std::endl; return 1;}
@@ -88,6 +95,7 @@ int main(int argc, char* argv[]) {
 	// accept input and write
 	std::cout << "Input multiple: ";
 	std::cin >> mult;
+	std::cout << std::endl << "Accepted multiple: " << mult << std::endl;
 	wPaper *= mult;
 	wStone *= mult;
 	wWood *= mult;
@@ -96,15 +104,44 @@ int main(int argc, char* argv[]) {
 	CK2_CKDataArray_SetElementValue(dataarray, 1, 7, &wStone, sizeof(float));
 	CK2_CKDataArray_SetElementValue(dataarray, 2, 7, &wWood, sizeof(float));
 
+	// try save IC so we need a fake level
+	int idCount = 0;
+	CK_ID* idList = NULL;
+#define addObjList(classid) idCount=CK2_CKContext_GetObjectsCountByClassID(ctx,classid);idList=CK2_CKContext_GetObjectsListByClassID(ctx,classid);for(int i=0;i<idCount;i++)CK2_CKLevel_AddObject(levels,CK2_CKContext_GetObjectA(ctx, idList[i]));
+	CKLevel* levels = CK2_CKContext_CreateObject(ctx, CKCID_LEVEL, NULL, CK_OBJECTCREATION_NONAMECHECK, NULL);
+	CK2_CKContext_SetCurrentLevel(ctx, levels);
+	addObjList(CKCID_3DOBJECT);
+	addObjList(CKCID_3DENTITY);
+	addObjList(CKCID_DATAARRAY);
+	addObjList(CKCID_GROUP);
+	addObjList(CKCID_LIGHT);
+	addObjList(CKCID_MATERIAL);
+	addObjList(CKCID_MESH);
+	addObjList(CKCID_TEXTURE);
+#undef addObjList
+
 	// save
+	CK2_CKContext_SetGlobalImagesSaveOptions(ctx, CKTEXTURE_EXTERNAL);
+	GetTempPath(BUFFER_SIZE, sharedStorage);
+	std::filesystem::path ballscmo;
+	ballscmo = sharedStorage;
+	sprintf(sharedStorage, "0c7666f3e2be44ef9973c2ec88deb829_%d.cmo", GetCurrentProcessId());
+	ballscmo /= sharedStorage;
 	DeleteFile(ballsnmo.string().c_str());
-	code = CK2_CKContext_Save(ctx, (char*)ballsnmo.string().c_str(), array, 0xFFFFFFFF, CK2_CKGetDefaultClassDependencies(CK_DEPENDENCIES_SAVE), NULL);
+	DeleteFile(ballscmo.string().c_str());
+	code = CK2_CKContext_Save(ctx, (char*)ballscmo.string().c_str(), array, 0xFFFFFFFF, CK2_CKGetDefaultClassDependencies(CK_DEPENDENCIES_SAVE), NULL);
 	checkcode("Fail to save CMO file");
+	if (!MoveFile(ballscmo.string().c_str(), ballsnmo.string().c_str())) {
+		std::cout << "Fail to move created file!" << std::endl; 
+		return 1;
+	}
 
 	// clean
 	CK2_DeleteCKObjectArray(array);
 	CK2_CKCloseContext(ctx);
 	CK2_CKShutdown();
+
+	std::cout << "OK" << std::endl;
 
 #undef checkcode
 	return 0;
