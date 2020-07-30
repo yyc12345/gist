@@ -8,6 +8,9 @@
 
 int main(int argc, char* argv[]) {
 
+	std::cout << "FreeBallSpeed created by yyc12345" << std::endl <<
+		"Source code url: https://github.com/yyc12345/gist/tree/master/FreeBallSpeed" << std::endl << std::endl;
+
 	char* sharedStorage = (char*)malloc(sizeof(char) * BUFFER_SIZE);
 	if (sharedStorage == NULL) {
 		std::cout << "Fail to alloc cache memory" << std::endl;
@@ -36,17 +39,15 @@ int main(int argc, char* argv[]) {
 	auto CK2_CKDataArray_GetElementValue = CK2Def_CKDataArray_GetElementValue(GetProcAddress(ck2, "?GetElementValue@CKDataArray@@QAEHHHPAX@Z"));
 	auto CK2_CKCreateContext = CK2Def_CKCreateContext(GetProcAddress(ck2, "?CKCreateContext@@YAJPAPAVCKContext@@PAXHK@Z"));
 	auto CK2_CKCloseContext = CK2Def_CKCloseContext(GetProcAddress(ck2, "?CKCloseContext@@YAJPAVCKContext@@@Z"));
-	auto CK2_CKContext_GetObjectsCountByClassID = CK2Def_CKContext_GetObjectsCountByClassID(GetProcAddress(ck2, "?GetObjectsCountByClassID@CKContext@@QAEHJ@Z"));
-	auto CK2_CKContext_GetObjectsListByClassID = CK2Def_CKContext_GetObjectsListByClassID(GetProcAddress(ck2, "?GetObjectsListByClassID@CKContext@@QAEPAKJ@Z"));
-	auto CK2_CKContext_GetObjectA = CK2Def_CKContext_GetObjectA(GetProcAddress(ck2, "?GetObjectA@CKContext@@QAEPAVCKObject@@K@Z"));
 	auto CK2_CKContext_CreateObject = CK2Def_CKContext_CreateObject(GetProcAddress(ck2, "?CreateObject@CKContext@@QAEPAVCKObject@@JPADW4CK_OBJECTCREATION_OPTIONS@@PAW4CK_LOADMODE@@@Z"));
 	auto CK2_CKLevel_AddObject = CK2Def_CKLevel_AddObject(GetProcAddress(ck2, "?AddObject@CKLevel@@QAEJPAVCKObject@@@Z"));
 	auto CK2_CKContext_SetCurrentLevel = CK2Def_CKContext_SetCurrentLevel(GetProcAddress(ck2, "?SetCurrentLevel@CKContext@@QAEXPAVCKLevel@@@Z"));
 	auto CK2_CKContext_SetGlobalImagesSaveOptions = CK2Def_CKContext_SetGlobalImagesSaveOptions(GetProcAddress(ck2, "?SetGlobalImagesSaveOptions@CKContext@@QAEXW4CK_TEXTURE_SAVEOPTIONS@@@Z"));
+	auto CK2_CKContext_GetObjectListByType = CK2Def_CKContext_GetObjectListByType(GetProcAddress(ck2, "?GetObjectListByType@CKContext@@QAEABVXObjectPointerArray@@JH@Z"));
 
 	// init engine
 #define checkcode(err_reason) if (code != CK_OK) {std::cout << err_reason << std::endl; return 1;}
-
+	
 	CKERROR code = CK2_CKStartUp();
 	checkcode("Fail to execute CKStartUp()");
 
@@ -105,20 +106,26 @@ int main(int argc, char* argv[]) {
 	CK2_CKDataArray_SetElementValue(dataarray, 2, 7, &wWood, sizeof(float));
 
 	// try save IC so we need a fake level
-	int idCount = 0;
-	CK_ID* idList = NULL;
-#define addObjList(classid) idCount=CK2_CKContext_GetObjectsCountByClassID(ctx,classid);idList=CK2_CKContext_GetObjectsListByClassID(ctx,classid);for(int i=0;i<idCount;i++)CK2_CKLevel_AddObject(levels,CK2_CKContext_GetObjectA(ctx, idList[i]));
+	//int idCount = 0;
+	//CK_ID* idList = NULL;
+	const XObjectPointerArray* objary = &(CK2_CKContext_GetObjectListByType(ctx, CKCID_OBJECT, TRUE));
+	CKObject** a = objary->Begin();
+	CKObject** b = objary->End();
+//#define addObjList(classid) idCount=CK2_CKContext_GetObjectsCountByClassID(ctx,classid);idList=CK2_CKContext_GetObjectsListByClassID(ctx,classid);for(int i=0;i<idCount;i++)CK2_CKLevel_AddObject(levels,CK2_CKContext_GetObjectA(ctx, idList[i]));
 	CKLevel* levels = CK2_CKContext_CreateObject(ctx, CKCID_LEVEL, NULL, CK_OBJECTCREATION_NONAMECHECK, NULL);
 	CK2_CKContext_SetCurrentLevel(ctx, levels);
-	addObjList(CKCID_3DOBJECT);
+	/*addObjList(CKCID_3DOBJECT);
 	addObjList(CKCID_3DENTITY);
 	addObjList(CKCID_DATAARRAY);
 	addObjList(CKCID_GROUP);
 	addObjList(CKCID_LIGHT);
 	addObjList(CKCID_MATERIAL);
 	addObjList(CKCID_MESH);
-	addObjList(CKCID_TEXTURE);
-#undef addObjList
+	addObjList(CKCID_TEXTURE);*/
+	for (CKObject** item = objary->Begin(); item != objary->End(); item++) {
+		CK2_CKLevel_AddObject(levels, *item);
+	}
+//#undef addObjList
 
 	// save
 	CK2_CKContext_SetGlobalImagesSaveOptions(ctx, CKTEXTURE_EXTERNAL);
@@ -129,7 +136,9 @@ int main(int argc, char* argv[]) {
 	ballscmo /= sharedStorage;
 	DeleteFile(ballsnmo.string().c_str());
 	DeleteFile(ballscmo.string().c_str());
-	code = CK2_CKContext_Save(ctx, (char*)ballscmo.string().c_str(), array, 0xFFFFFFFF, CK2_CKGetDefaultClassDependencies(CK_DEPENDENCIES_SAVE), NULL);
+	CKDependencies* dep = CK2_CKGetDefaultClassDependencies(CK_DEPENDENCIES_SAVE);
+	dep->m_Flags = CK_DEPENDENCIES_FULL;
+	code = CK2_CKContext_Save(ctx, (char*)ballscmo.string().c_str(), array, 0xFFFFFFFF, dep, NULL);
 	checkcode("Fail to save CMO file");
 	if (!MoveFile(ballscmo.string().c_str(), ballsnmo.string().c_str())) {
 		std::cout << "Fail to move created file!" << std::endl; 

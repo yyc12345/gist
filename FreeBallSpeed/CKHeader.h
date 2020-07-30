@@ -53,6 +53,11 @@ typedef enum CK_TEXTURE_SAVEOPTIONS {
 	CKTEXTURE_INCLUDEORIGINALFILE = 4,
 } CK_TEXTURE_SAVEOPTIONS;
 
+typedef enum CK_DEPENDENCIES_FLAGS {
+	CK_DEPENDENCIES_CUSTOM = 0x00000000,	// Dependencies will depends on what options where modified in CKDependencies
+	CK_DEPENDENCIES_NONE = 0x00000001,	// No dependencies will be taken into account
+	CK_DEPENDENCIES_FULL = 0x00000002	// Every dependencies will be taken
+} CK_DEPENDENCIES_FLAGS;
 
 #pragma region CK_ERROR
 
@@ -344,6 +349,9 @@ typedef long CK_CLASSID;
 typedef unsigned long CKDWORD;
 typedef int CKBOOL;
 typedef unsigned long CK_ID;
+typedef int XBOOL;
+typedef unsigned char XBYTE;
+typedef int(__cdecl* VxSortFunc)(const void* elem1, const void* elem2);
 
 typedef void CKContext;
 typedef void CKPluginManager;
@@ -352,7 +360,167 @@ typedef void CKObjectArray;
 typedef void CKObject;
 typedef void CKLevel;
 typedef void CKDataArray;
-typedef void CKDependencies;
+typedef void CKStateChunk;
+
+typedef struct CKDependenciesContext {
+	BYTE occupied[92];
+} CKDependenciesContext;
+
+#pragma region class define
+
+template <class T, int Alignment = 0>
+class XArray {
+	public:
+	typedef XArray<T, Alignment> Array;
+	// Types
+	typedef T* Iterator;
+	typedef T	Type;
+	typedef T& Reference;
+
+	XArray(int ss = 0);
+	XArray(const Array& a);
+	~XArray();
+	Array& operator = (const Array& a);
+	Array& operator += (const Array& a);
+	Array& operator -= (const Array& a);
+	void Clear();
+	void Compact();
+	void Reserve(int size);
+	void Resize(int size);
+	void Expand(int e = 1);
+	void Compress(int e = 1);
+	void PushBack(const T& o);
+	void PushFront(const T& o);
+	void Insert(T* i, const T& o);
+	void InsertSorted(const T& o);
+	void Move(T* i, T* n);
+	T PopBack();
+	void PopFront();
+	XBOOL RemoveAt(unsigned int pos, T& old);
+	BOOL EraseAt(int pos);
+	T* RemoveAt(int pos);
+	T* Remove(T* i);
+	T* Remove(const T& o);
+	BOOL Erase(const T& o);
+	void FastRemove(const T& o);
+	void FastRemove(const Iterator& iT);
+	void Fill(const T& o);
+	void Memset(XBYTE val);
+	const T& operator [](int i) const;
+	T& operator [](int i);
+	T* At(unsigned int i);
+	const T* At(unsigned int i) const;
+	T* Find(const T& o) const;
+	XBOOL IsHere(const T& o) const;
+	int GetPosition(const T& o) const;
+	void Swap(int pos1, int pos2);
+	void Swap(Array& a);
+	T& Front();
+	const T& Front() const;
+	T& Back();
+	const T& Back() const;
+	T* Begin() const { return m_Begin; }
+	T* RBegin() const;
+	T* End() const { return m_End; }
+	T* REnd() const;
+	int Size() const;
+	bool IsEmpty() const;
+	int GetMemoryOccupation(XBOOL addstatic = FALSE) const;
+	int Allocated() const;
+	static int XCompare(const void* elem1, const void* elem2);
+	void Sort(VxSortFunc compare = XCompare);
+	void BubbleSort(T* rangestart, T* rangeend, VxSortFunc compare = XCompare);
+	void BubbleSort(VxSortFunc compare = XCompare);
+
+	protected:
+	void XCopy(T* dest, T* start, T* end);
+	void XMove(T* dest, T* start, T* end);
+	void XInsert(T* i, const T& o);
+	T* XRemove(T* i);
+	T* Allocate(int size);
+	void Free();
+
+	T* m_Begin;
+	T* m_End;
+	T* m_AllocatedEnd;
+
+};
+
+template <class T>
+class XSArray {
+	public:
+	XSArray();
+	XSArray(const XSArray<T>& a);
+	~XSArray();
+	XSArray<T>& operator = (const XSArray<T>& a);
+	XSArray<T>& operator += (const XSArray<T>& a);
+	XSArray<T>& operator -= (const XSArray<T>& a);
+	void Clear();
+	void Fill(const T& o);
+	void Resize(int size);
+	void PushBack(const T& o);
+	void PushFront(const T& o);
+	void Insert(T* i, const T& o);
+	void Insert(int pos, const T& o);
+	void Move(T* i, T* n);
+	void PopBack();
+	void PopFront();
+	T* Remove(T* i);
+	XBOOL RemoveAt(unsigned int pos, T& old);
+	T* RemoveAt(int pos);
+	int Remove(const T& o);
+	T& operator [](unsigned int i) const;
+	T* At(unsigned int i)  const;
+	T* Find(const T& o)  const;
+	XBOOL IsHere(const T& o) const;
+	int GetPosition(const T& o) const;
+	void Swap(int pos1, int pos2);
+	void Swap(XSArray<T>& a);
+	static int XCompare(const void* elem1, const void* elem2);
+	void Sort(VxSortFunc compare = XCompare);
+	void BubbleSort(VxSortFunc compare = XCompare);
+	T* Begin() const;
+	T* End()  const;
+	int Size() const;
+	int GetMemoryOccupation(XBOOL addstatic = FALSE) const;
+	protected:
+	void XCopy(T* dest, T* start, T* end);
+	void XMove(T* dest, T* start, T* end);
+	void XInsert(T* i, const T& o);
+	T* XRemove(T* i);
+	T* Allocate(int size);
+	void Free();
+	T* m_Begin;
+	T* m_End;
+};
+
+
+class XObjectPointerArray : public XArray<CKObject*> {
+	public:
+	XObjectPointerArray(const int iSize = 0) :XArray<CKObject*>(iSize) {}
+	BOOL AddIfNotHere(CKObject* obj);
+	CKObject* GetObject(unsigned int i)  const;
+	int	RemoveObject(CKObject* obj);
+	BOOL FindObject(CKObject* obj)  const;
+	CK_ID GetObjectID(unsigned int i) const;
+	BOOL Check();
+
+	void Load(CKContext* Context, CKStateChunk* chunk);
+	void Save(CKStateChunk* chunk)  const;
+	void Prepare(CKDependenciesContext& context)  const;
+	void Remap(CKDependenciesContext& context);
+};
+
+class CKDependencies : public XSArray<CKDWORD> {
+	public:
+
+	CKDependencies() :XSArray<CKDWORD>(), m_Flags(CK_DEPENDENCIES_NONE) {}
+	void ModifyOptions(CK_CLASSID cid, CKDWORD add, CKDWORD rem);
+	CK_DEPENDENCIES_FLAGS	m_Flags;
+};
+
+#pragma endregion
+
 
 typedef CKERROR(__cdecl* CK2Def_CKStartUp)();
 typedef CKERROR(__cdecl* CK2Def_CKShutdown)();
@@ -368,12 +536,10 @@ typedef CKBOOL(__thiscall* CK2Def_CKDataArray_SetElementValue)(CKDataArray*, int
 typedef CKBOOL(__thiscall* CK2Def_CKDataArray_GetElementValue)(CKDataArray*, int, int, void*);
 typedef CKERROR(__cdecl* CK2Def_CKCreateContext)(CKContext**, HWND, int, unsigned long);
 typedef CKERROR(__cdecl* CK2Def_CKCloseContext)(CKContext*);
-typedef int(__thiscall* CK2Def_CKContext_GetObjectsCountByClassID)(CKContext*, CK_CLASSID);
-typedef CK_ID* (__thiscall* CK2Def_CKContext_GetObjectsListByClassID)(CKContext*, CK_CLASSID);
-typedef CKObject* (__thiscall* CK2Def_CKContext_GetObjectA)(CKContext*, CK_ID);
 typedef CKObject* (__thiscall* CK2Def_CKContext_CreateObject)(CKContext*, CK_CLASSID, CKSTRING, CK_OBJECTCREATION_OPTIONS, CK_LOADMODE*);	// default value: x NULL, CK_OBJECTCREATION_NONAMECHECK, NULL
 typedef CKERROR(__thiscall* CK2Def_CKLevel_AddObject)(CKLevel*, CKObject*);
 typedef void(__thiscall* CK2Def_CKContext_SetCurrentLevel)(CKContext*, CKLevel*);
 typedef void(__thiscall* CK2Def_CKContext_SetGlobalImagesSaveOptions)(CKContext*, CK_TEXTURE_SAVEOPTIONS);
+typedef XObjectPointerArray const& (__thiscall* CK2Def_CKContext_GetObjectListByType)(CKContext*, CK_CLASSID, CKBOOL);
 
 #endif
