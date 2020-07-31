@@ -120,8 +120,6 @@ int main(int argc, char* argv[]) {
 	//int idCount = 0;
 	//CK_ID* idList = NULL;
 	const XObjectPointerArray* objary = &(CK2_CKContext_GetObjectListByType(ctx, CKCID_OBJECT, TRUE));
-	CKObject** a = objary->Begin();
-	CKObject** b = objary->End();
 //#define addObjList(classid) idCount=CK2_CKContext_GetObjectsCountByClassID(ctx,classid);idList=CK2_CKContext_GetObjectsListByClassID(ctx,classid);for(int i=0;i<idCount;i++)CK2_CKLevel_AddObject(levels,CK2_CKContext_GetObjectA(ctx, idList[i]));
 	CKLevel* levels = CK2_CKContext_CreateObject(ctx, CKCID_LEVEL, NULL, CK_OBJECTCREATION_NONAMECHECK, NULL);
 	CK2_CKContext_SetCurrentLevel(ctx, levels);
