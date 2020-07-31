@@ -59,6 +59,14 @@ typedef enum CK_DEPENDENCIES_FLAGS {
 	CK_DEPENDENCIES_FULL = 0x00000002	// Every dependencies will be taken
 } CK_DEPENDENCIES_FLAGS;
 
+typedef enum CK_FILE_WRITEMODE {
+	CKFILE_UNCOMPRESSED = 0,
+	CKFILE_CHUNKCOMPRESSED_OLD = 1,
+	CKFILE_EXTERNALTEXTURES_OLD = 2,
+	CKFILE_FORVIEWER = 4,
+	CKFILE_WHOLECOMPRESSED = 8,
+} CK_FILE_WRITEMODE;
+
 #pragma region CK_ERROR
 
 //----------------------------------------------------------////
@@ -541,5 +549,7 @@ typedef CKERROR(__thiscall* CK2Def_CKLevel_AddObject)(CKLevel*, CKObject*);
 typedef void(__thiscall* CK2Def_CKContext_SetCurrentLevel)(CKContext*, CKLevel*);
 typedef void(__thiscall* CK2Def_CKContext_SetGlobalImagesSaveOptions)(CKContext*, CK_TEXTURE_SAVEOPTIONS);
 typedef XObjectPointerArray const& (__thiscall* CK2Def_CKContext_GetObjectListByType)(CKContext*, CK_CLASSID, CKBOOL);
+typedef void(__thiscall* CK2Def_CKContext_SetCompressionLevel)(CKContext*, int);
+typedef void(__thiscall* CK2Def_CKContext_SetFileWriteMode)(CKContext*, CK_FILE_WRITEMODE);
 
 #endif

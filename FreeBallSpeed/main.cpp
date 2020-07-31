@@ -5,11 +5,19 @@
 #include <filesystem>
 
 #define BUFFER_SIZE 65526
+#define SAVE_WITH_IC TRUE
 
 int main(int argc, char* argv[]) {
 
 	std::cout << "FreeBallSpeed created by yyc12345" << std::endl <<
-		"Source code url: https://github.com/yyc12345/gist/tree/master/FreeBallSpeed" << std::endl << std::endl;
+		"Source code url: https://github.com/yyc12345/gist/tree/master/FreeBallSpeed" << std::endl <<
+#if SAVE_WITH_IC
+		"Save IC version" << 
+#else
+		"Delete IC version" <<
+#endif
+		std::endl << std::endl;
+
 
 	char* sharedStorage = (char*)malloc(sizeof(char) * BUFFER_SIZE);
 	if (sharedStorage == NULL) {
@@ -44,6 +52,8 @@ int main(int argc, char* argv[]) {
 	auto CK2_CKContext_SetCurrentLevel = CK2Def_CKContext_SetCurrentLevel(GetProcAddress(ck2, "?SetCurrentLevel@CKContext@@QAEXPAVCKLevel@@@Z"));
 	auto CK2_CKContext_SetGlobalImagesSaveOptions = CK2Def_CKContext_SetGlobalImagesSaveOptions(GetProcAddress(ck2, "?SetGlobalImagesSaveOptions@CKContext@@QAEXW4CK_TEXTURE_SAVEOPTIONS@@@Z"));
 	auto CK2_CKContext_GetObjectListByType = CK2Def_CKContext_GetObjectListByType(GetProcAddress(ck2, "?GetObjectListByType@CKContext@@QAEABVXObjectPointerArray@@JH@Z"));
+	auto CK2_CKContext_SetCompressionLevel = CK2Def_CKContext_SetCompressionLevel(GetProcAddress(ck2, "?SetCompressionLevel@CKContext@@QAEXH@Z"));
+	auto CK2_CKContext_SetFileWriteMode = CK2Def_CKContext_SetFileWriteMode(GetProcAddress(ck2, "?SetFileWriteMode@CKContext@@QAEXW4CK_FILE_WRITEMODE@@@Z"));
 
 	// init engine
 #define checkcode(err_reason) if (code != CK_OK) {std::cout << err_reason << std::endl; return 1;}
@@ -105,6 +115,7 @@ int main(int argc, char* argv[]) {
 	CK2_CKDataArray_SetElementValue(dataarray, 1, 7, &wStone, sizeof(float));
 	CK2_CKDataArray_SetElementValue(dataarray, 2, 7, &wWood, sizeof(float));
 
+#if SAVE_WITH_IC
 	// try save IC so we need a fake level
 	//int idCount = 0;
 	//CK_ID* idList = NULL;
@@ -126,9 +137,13 @@ int main(int argc, char* argv[]) {
 		CK2_CKLevel_AddObject(levels, *item);
 	}
 //#undef addObjList
+#endif
 
 	// save
 	CK2_CKContext_SetGlobalImagesSaveOptions(ctx, CKTEXTURE_EXTERNAL);
+	CK2_CKContext_SetFileWriteMode(ctx, CKFILE_WHOLECOMPRESSED);
+	CK2_CKContext_SetCompressionLevel(ctx, 9);
+
 	GetTempPath(BUFFER_SIZE, sharedStorage);
 	std::filesystem::path ballscmo;
 	ballscmo = sharedStorage;
