@@ -44,6 +44,30 @@ BM 文件标准只定义了文件中的一些字段的要求，并没有指明�
 |25|PR_Resetpoint|
 |26|PS_FourFlames|
 
+这些Component通过工具链中附带的`bin`文件存储Mesh信息，每个`bin`文件遵循如下格式，此格式与BM文件标准中的`mesh.bm`颇为相像，并且会一起更新结构。同时该文件的坐标系等信息与BM标准一致。
+
+|助记符|类型|
+|:---|:---|
+|V_COUNT|unsigned int32_t|
+|V_LIST|-|
+|VN_COUNT|unsigned int32_t|
+|VN_LIST|-|
+|FACE_COUNT|unsigned int32_t|
+|FACE_LIST|-|
+
+每个面的格式如下
+
+|助记符|类型|
+|:---|:---|
+|VERTEX_1|unsigned int32_t|
+|NORMAL_1|unsigned int32_t|
+|VERTEX_2|unsigned int32_t|
+|NORMAL_2|unsigned int32_t|
+|VERTEX_3|unsigned int32_t|
+|NORMAL_3|unsigned int32_t|
+
+与`mesh.bm`最大的差别是，Component不需要贴图。因此贴图UV和贴图材质字段没有必要保留。
+
 ## 外置贴图标准
 
 以下贴图将被默认视作外置贴图。

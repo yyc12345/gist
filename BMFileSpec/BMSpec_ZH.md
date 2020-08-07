@@ -222,6 +222,8 @@ SPECULAR表示材质的高光色（specular color），其中的数据依次表�
 
 EMISSIVE表示材质的自发光色（emissive color），其中的数据依次表示R，G，B
 
+这些颜色的各个分量应被钳制在0-1的范围内，以小数表示分量的多少。
+
 ### SPECULAR_POWER
 
 表示SPECULAR的强度，其含义对应Virtools中的Power滑条。

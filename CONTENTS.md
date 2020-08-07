@@ -6,5 +6,6 @@
 * BilibiliPhoneDownloadedVideoMerge：自用的用来生成批量合并Android Bilibili客户端下载的视频的脚本
 * BMFileSpec：下属文件包括BM的标准文档以及yyc制图工具链的标准文档
 * BMCodeHelper
-    * ComponentGenerator.py：用于生成yyc制图工具链依赖的component文件结构的脚本，从obj转换文件格式到yyc制图工具链可读格式
+    * ComponentGenerator.py：用于生成yyc制图工具链依赖的component文件结构的脚本，从obj转换文件格式到yyc制图工具链可读格式（obj需要为已经转换坐标系为Blender的格式）
     * CaseMigrate：迁移代码中的外置贴图列表的switch，将新的case数值匹配到旧的case代码上
+* FreeBallSpeed：给Ballance吧吧务开发的用于极限竞速榜单的改球速工具
