@@ -1,3 +1,12 @@
+/*
+
+COPYRIGHT WARNING
+
+This file is not follwoing this project's LICENSE.
+These code comes from AheadLib project. If you want
+to use it, you should follow AheadLib's License.
+
+*/
 #include <Windows.h>
 #include <cassert>
 
