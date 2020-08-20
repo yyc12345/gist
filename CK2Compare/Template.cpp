@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <cassert>
 
 #define NAKED __declspec(naked)
 #define EXPORT __declspec(dllexport)
@@ -12,7 +13,7 @@ inline BOOL WINAPI Load()
     TCHAR tzPath[MAX_PATH];
     TCHAR tzTemp[MAX_PATH * 2];
 
-    lstrcpy(tzPath, TEXT("CK2"));
+    lstrcpy(tzPath, TEXT("{{ dllName }}"));
     m_hModule = LoadLibrary(tzPath);
     assert(m_hModule != NULL);
     return (m_hModule != NULL);	

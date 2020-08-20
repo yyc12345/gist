@@ -20,15 +20,32 @@ def getCorrectFunctionName(garbageName,fcounter):
         if functionNamePart.find("__thiscall") != -1:
             # it a this call, need change
             functionNamePart=functionNamePart.replace("__thiscall", "__stdcall")
-            additionalParameter = "void*"
-        else: additionalParameter = ""
+            additionalParameter = "void *"
+        else:
+            additionalParameter = ""
+        if parameterPart == 'void':
+            parameterPart = ''
+        if parameterPart != '':
+            if additionalParameter != '':
+                parameterPart = additionalParameter + ',' + parameterPart
+        else:
+            parameterPart = additionalParameter
 
         parameterPartSp = parameterSpliter(parameterPart)
         parameterPartSpResult = []
         for ind, i in enumerate(parameterPartSp):
             i=i.strip()
-            if (i.startswith("class") or i.startswith("struct")) and i.endswith("*"):
-                parameterPartSpResult.append("void* val{}".format(ind))
+            if i.startswith("class"):
+                if i.endswith("*"):
+                    parameterPartSpResult.append("void* val{}".format(ind))
+                else:
+                    parameterPartSpResult.append("{} val{}".format(i[5:], ind))
+                continue
+            if i.startswith("struct"):
+                if i.endswith("*"):
+                    parameterPartSpResult.append("void* val{}".format(ind))
+                else:
+                    parameterPartSpResult.append("{} val{}".format(i[6:], ind))
                 continue
 
             if i.startswith("enum"):
@@ -39,14 +56,13 @@ def getCorrectFunctionName(garbageName,fcounter):
                 parameterPartSpResult.append("void* val{}".format(ind))
                 continue
 
+            if i=='...':
+                parameterPartSpResult.append('...')
+
             # lost match, write it directly
             parameterPartSpResult.append("{} val{}".format(i, ind))
 
         perfectParameter=', '.join(parameterPartSpResult)
-        if perfectParameter=='':
-            perfectParameter = additionalParameter
-        else:
-            perfectParameter = additionalParameter + ", " + perfectParameter
                 
     else:
         # field
@@ -64,16 +80,22 @@ def getCorrectFunctionName(garbageName,fcounter):
     else:
         functionCall = ''
 
-    functionNameHeader = functionNameHeader.strip()
+    functionNameHeader = functionNameHeader.replace('virtual', '').strip()
     functionNewHeader = ''
     while True:
         functionClipIndex = functionNameHeader.find('class')
-        if functionClipIndex != -1 and functionNameHeader.endswith('*'):
-            functionNewHeader = functionNameHeader[:functionClipIndex] + " void*"
+        if functionClipIndex != -1:
+            if functionNameHeader.endswith('*'):
+                functionNewHeader = functionNameHeader[:functionClipIndex] + " void*"
+            else:
+                functionNewHeader = functionNameHeader[:functionClipIndex] + functionNameHeader[functionClipIndex + 5:]
             break
         functionClipIndex = functionNameHeader.find('struct')
-        if functionClipIndex != -1 and functionNameHeader.endswith('*'):
-            functionNewHeader = functionNameHeader[:functionClipIndex] + " void*"
+        if functionClipIndex != -1:
+            if functionNameHeader.endswith('*'):
+                functionNewHeader = functionNameHeader[:functionClipIndex] + " void*"
+            else:
+                functionNewHeader = functionNameHeader[:functionClipIndex] + functionNameHeader[functionClipIndex + 6:]
             break
         
         functionClipIndex = functionNameHeader.find('enum')
@@ -117,6 +139,9 @@ def parameterSpliter(paramters):
                 cache+=i
         else:
             cache+=i
+
+    if cache != '':
+        result.append(cache)
 
     return result
 
@@ -185,6 +210,7 @@ env = jinja2.Environment(
 template = env.get_template('Template.cpp')
 fResult = open(sys.argv[2], 'w', encoding='utf-8')
 fResult.write(template.render(funcCount = counter,
-                                renderData = renderData))
+                                renderData = renderData,
+                                dllName = sys.argv[5]))
 fResult.close()
 
