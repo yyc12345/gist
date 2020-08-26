@@ -1,0 +1,2 @@
+It need a Nuget package: zlib.net
+Test under .Net Framework 4.5
