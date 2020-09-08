@@ -1,3 +1,5 @@
+import sys
+# read base document
 fCK2=open('CK2_ExportFunc.txt', 'r', encoding='utf-8')
 fCK2Demangled=open('CK2_DemangledExportFunc.txt', 'r', encoding='utf-8')
 fVxMath=open('VxMath_ExportFunc.txt', 'r', encoding='utf-8')
@@ -28,70 +30,78 @@ fCK2Demangled.close()
 fVxMath.close()
 fVxMathDemangled.close()
 
-fCK2Test=open('CK2Test.txt', 'r', encoding='utf-8')
-fCK2TestDemangled=open('CK2TestDemangled.txt', 'r', encoding='utf-8')
-fVxMathTest=open('VxMathTest.txt', 'r', encoding='utf-8')
-fVxMathTestDemangled=open('VxMathTestDemangled.txt', 'r', encoding='utf-8')
+class DefineItem(object):
+    def __init__(self):
+        self.decoratedName = ""
+        self.belongto=""
+        self.mode=""
+        self.demangledName = ""
 
-fCK2Cmp=open('CK2Cmp.txt', 'w', encoding='utf-8')
-fVxMathCmp=open('VxMathCmp.txt', 'w', encoding='utf-8')
 
-print("Testing no matched CK2")
-counter=0
-keep=0
-while True:
-    cache=fCK2Test.readline()
-    demangled=fCK2TestDemangled.readline()
-    if cache == '':
-        break
-    cache = cache.strip()
-    if cache == '':
-        continue
-    tryGetValue = CK2Dict.get(cache, '')
-    if tryGetValue == '':
-        fCK2Cmp.write('modify\n')
-        fCK2Cmp.write(cache)
-        fCK2Cmp.write('\n')
-        fCK2Cmp.write(demangled.strip())
-        fCK2Cmp.write('\n?SetDescription@CKObjectDeclaration@@QAEXPAD@Z\n')
-    else:
-        fCK2Cmp.write('keep\n')
-        fCK2Cmp.write(cache)
-        fCK2Cmp.write('\n')
-        keep+=1
-    counter+=1
-print("Keep: {} Modify: {}".format(keep, counter-keep))
+# read custom document
+finalDocument = sys.argv[1]
+neededDocument = int(sys.argv[2])
+resultCK2Dict = {}
+resultVxMathDict = {}
 
-print("Testing no matched VxMath")
-counter=0
-keep=0
-while True:
-    cache=fVxMathTest.readline()
-    demangled=fVxMathTestDemangled.readline()
-    if cache == '':
-        break
-    cache = cache.strip()
-    if cache == '':
-        continue
-    tryGetValue = VxMathDict.get(cache, '')
-    if tryGetValue == '':
-        fVxMathCmp.write('modify\n')
-        fVxMathCmp.write(cache)
-        fVxMathCmp.write('\n')
-        fVxMathCmp.write(demangled.strip())
-        fVxMathCmp.write('\n??0XString@@QAE@H@Z\n')
-    else:
-        fVxMathCmp.write('keep\n')
-        fVxMathCmp.write(cache)
-        fVxMathCmp.write('\n')
-        keep+=1
-    counter+=1
-print("Keep: {} Modify: {}".format(keep, counter-keep))
+def analyseFile(decoratedFile, demangledFile, matchDict, resultDict, belongtodll):
+    fDec = open(decoratedFile, 'r', encoding='utf-8')
+    fDem = open(demangledFile, 'r', encoding='utf-8')
 
-fCK2Test.close()
-fCK2TestDemangled.close()
-fVxMathTest.close()
-fVxMathTestDemangled.close()
+    while True:
+        dec=fDec.readline()
+        dem=fDem.readline()
+        if dec == '':
+            break
 
-fCK2Cmp.close()
-fVxMathCmp.close()
+        dec=dec.strip()
+        dem=dem.strip()
+        tryGetValue = resultDict.get(dec, None)
+        if tryGetValue is not None:
+            # exist
+            continue
+
+        tryGetValue = matchDict.get(dec, '')
+        addedItem = DefineItem()
+        addedItem.decoratedName = dec
+        addedItem.demangledName = dem
+        addedItem.belongto = belongtodll
+        if tryGetValue == '':
+            # modify
+            addedItem.mode = 'modify'
+        else:
+            # keep
+            addedItem.mode = 'keep'
+
+        resultDict[dec] = addedItem
+
+
+    fDec.close()
+    fDem.close()
+
+for i in range(neededDocument):
+    analyseFile('ck2Test_'+str(i+1)+'.txt', 'deck2_'+str(i+1)+'.txt', CK2Dict, resultCK2Dict, 'ck2')
+    analyseFile('vxmathTest_'+str(i+1)+'.txt', 'devxmath_'+str(i+1)+'.txt', VxMathDict, resultVxMathDict, 'vxmath')
+
+# write final doc
+allCount = 0
+modifyCount = 0
+fRes = open(finalDocument, 'w', encoding='utf-8')
+iterList = list(x[1] for x in resultCK2Dict.items()) + list(x[1] for x in resultVxMathDict.items())
+allCount = len(iterList)
+for i in iterList:
+    fRes.write(i.mode)
+    fRes.write('\n')
+    fRes.write(i.belongto)
+    fRes.write('\n')
+    fRes.write(i.decoratedName)
+    fRes.write('\n')
+    if i.mode == 'modify':
+        fRes.write(i.demangledName)
+        fRes.write('\n')
+        fRes.write('\n')
+        modifyCount+=1
+
+fRes.close()
+
+print("All: {} Keep: {} Modify: {}".format(allCount, allCount - modifyCount, modifyCount))
