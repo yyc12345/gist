@@ -3,6 +3,7 @@ import jinja2
 
 # ========================= helper
 
+'''
 def getCorrectFunctionName(garbageName,fcounter):
     # clean class prefix
     garbageName=garbageName.replace('public:', '').replace('protected:', '').replace('private:', '').strip()
@@ -144,29 +145,47 @@ def parameterSpliter(paramters):
         result.append(cache)
 
     return result
+'''
+def generateFuncName(index):
+    return "func{}".format((str(index)).zfill(180))
 
 # ========================= read dict
-fDict=open(sys.argv[3], 'r', encoding='utf-8')
-fDictDemangled=open(sys.argv[4], 'r', encoding='utf-8')
+# read base document
+fCK2=open('CK2_ExportFunc.txt', 'r', encoding='utf-8')
+fCK2Demangled=open('CK2_DemangledExportFunc.txt', 'r', encoding='utf-8')
+fVxMath=open('VxMath_ExportFunc.txt', 'r', encoding='utf-8')
+fVxMathDemangled=open('VxMath_DemangledExportFunc.txt', 'r', encoding='utf-8')
 
-dllDict= {}
+CK2Dict= {}
+VxMathDict = {}
 
 while True:
-    cache = fDict.readline()
+    cache = fCK2.readline()
     if cache == '':
         break
     cache = cache.strip()
     if cache == '':
         continue
-    dllDict[cache] = fDictDemangled.readline().strip()
+    CK2Dict[cache] = fCK2Demangled.readline().strip()
+while True:
+    cache = fVxMath.readline()
+    if cache == '':
+        break
+    cache = cache.strip()
+    if cache == '':
+        continue
+    VxMathDict[cache] = fVxMathDemangled.readline().strip()
 
-fDict.close()
-fDictDemangled.close()
+fCK2.close()
+fCK2Demangled.close()
+fVxMath.close()
+fVxMathDemangled.close()
 
 # ========================= process
-fCmp = open(sys.argv[1], 'r', encoding='utf-8')
+fCmp = open('result.txt', 'r', encoding='utf-8')
 renderData = []
-counter = 0
+cffData = []
+counter=0
 while True:
     cache=fCmp.readline()
     if cache == '':
@@ -175,29 +194,29 @@ while True:
     if cache == '':
         continue
     sectorType=cache
+    moduleName = "CK2" if fCmp.readline().strip() == 'ck2' else "VxMath"
+    decoratedName = fCmp.readline().strip()
+    functionName = generateFuncName(counter)
+    cffData.append("{{ {}, 0x00 }}".format(', '.join(map(lambda x: '0x' + ('{:x}'.format(ord(x)).upper()), decoratedName))))
+
     if sectorType == 'keep':
-        decoratedName = fCmp.readline().strip()
-        demangledName = dllDict[decoratedName]
-        
-        (correctFunctionName, isField) = getCorrectFunctionName(demangledName, counter)
+        renderData.append((2, moduleName, functionName, decoratedName, (CK2Dict if moduleName == 'CK2' else VxMathDict)[decoratedName]))
+    elif sectorType == 'modify':
+        targetDemangledName = fCmp.readline().strip()
+        pointToDecoratedName = fCmp.readline().strip()
 
-        if isField:
-            renderData.append((2, correctFunctionName, demangledName))
-        else:
-            renderData.append((1, correctFunctionName, decoratedName, demangledName))
-    else:
-        decoratedName = fCmp.readline().strip()
-        demangledName = fCmp.readline().strip()
-        point2DecoratedName = fCmp.readline().strip()
-        point2DemangledName = dllDict[point2DecoratedName]
+        pointToDemangledName = ''
+        if pointToDecoratedName != '':
+            pointToDemangledName = (CK2Dict if moduleName == 'CK2' else VxMathDict)[pointToDecoratedName]
+        renderData.append((0, moduleName, functionName, decoratedName, targetDemangledName, pointToDecoratedName, pointToDemangledName))
+    else:   # hand
+        targetDemangledName = fCmp.readline().strip()
+        pointToDecoratedName = fCmp.readline().strip()
 
-        (correctFunctionName, isField) = getCorrectFunctionName(demangledName, counter)
-
-        if isField:
-            renderData.append((2, correctFunctionName, demangledName))
-        else:
-            renderData.append((0, correctFunctionName, point2DecoratedName, demangledName, point2DemangledName))
-
+        pointToDemangledName = ''
+        if pointToDecoratedName != '':
+            pointToDemangledName = (CK2Dict if moduleName == 'CK2' else VxMathDict)[pointToDecoratedName]
+        renderData.append((1, moduleName, functionName, decoratedName, targetDemangledName, pointToDecoratedName, pointToDemangledName))
     counter+=1
         
 fCmp.close()
@@ -208,9 +227,12 @@ env = jinja2.Environment(
     autoescape=jinja2.select_autoescape(['html', 'xml'])
 )
 template = env.get_template('Template.cpp')
-fResult = open(sys.argv[2], 'w', encoding='utf-8')
-fResult.write(template.render(funcCount = counter,
-                                renderData = renderData,
-                                dllName = sys.argv[5]))
+fResult = open('VirtoolsFsck.cpp', 'w', encoding='utf-8')
+fResult.write(template.render(renderData = renderData))
 fResult.close()
 
+template = env.get_template('Template.cff')
+fResult = open('VirtoolsFsckModify.cff', 'w', encoding='utf-8')
+fResult.write(template.render(cffData = cffData,
+                                dataLength = len(cffData) + 1))
+fResult.close()

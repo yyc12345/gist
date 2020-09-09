@@ -10,34 +10,35 @@ to use it, you should follow AheadLib's License.
 #include <Windows.h>
 #include <cassert>
 
-#define NAKED __declspec(naked)
-#define EXPORT __declspec(dllexport)
-#define EXPORTCPP EXPORT NAKED
+#define NORMALEXPORT __declspec(dllexport) __declspec(naked)
+#define HANDEXPORT __declspec(dllexport)
 
-HMODULE m_hModule = NULL;
-DWORD m_dwReturn[{{ funcCount }}] = {0};
+HMODULE m_CK2Module = NULL;
+HMODULE m_VxMathModule = NULL;
 
 inline BOOL WINAPI Load()
 {
     TCHAR tzPath[MAX_PATH];
-    TCHAR tzTemp[MAX_PATH * 2];
 
-    lstrcpy(tzPath, TEXT("{{ dllName }}"));
-    m_hModule = LoadLibrary(tzPath);
-    assert(m_hModule != NULL);
-    return (m_hModule != NULL);	
+    lstrcpy(tzPath, TEXT("CK2.dll"));
+    m_CK2Module = LoadLibrary(tzPath);
+    lstrcpy(tzPath, TEXT("VxMath.dll"));
+    m_VxMathModule = LoadLibrary(tzPath);
+    return (m_CK2Module != NULL) && (m_VxMathModule != NULL);	
 }
     
 inline VOID WINAPI Free()
 {
-    if (m_hModule)
-        FreeLibrary(m_hModule);
+    if (m_CK2Module)
+        FreeLibrary(m_CK2Module);
+    if (m_VxMathModule)
+        FreeLibrary(m_VxMathModule);
 }
 
-FARPROC WINAPI GetAddress(PCSTR pszProcName)
+FARPROC WINAPI GetAddress(HMODULE module, PCSTR pszProcName)
 {
     FARPROC fpAddress;
-    fpAddress = GetProcAddress(m_hModule, pszProcName);
+    fpAddress = GetProcAddress(module, pszProcName);
     assert(fpAddress != NULL);
     return fpAddress;
 }
@@ -47,15 +48,10 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, PVOID pvReserved)
 	if (dwReason == DLL_PROCESS_ATTACH)
 	{
 		DisableThreadLibraryCalls(hModule);
-
-		for (INT i = 0; i < sizeof(m_dwReturn) / sizeof(DWORD); i++)
-			m_dwReturn[i] = TlsAlloc();
 		return Load();
 	}
 	else if (dwReason == DLL_PROCESS_DETACH)
 	{
-		for (INT i = 0; i < sizeof(m_dwReturn) / sizeof(DWORD); i++)
-			TlsFree(m_dwReturn[i]);
 		Free();
 	}
 
@@ -65,38 +61,40 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, PVOID pvReserved)
 {#
 renderData for each item
 
-for modify: (type, functionName, currentDecoratedName, originalName, currentName)
-for keep: (type, functionName, decoratedName, originalName)
-for field: (type, fieldName, originalName)
+for modify(0): (type, module, functionName, targetDecoratedName, targetDemangledName, pointToDecoratedName, pointToDemangledName)
+for hand(1): (type, module, functionName, targetDecoratedName, targetDemangledName, pointToDecoratedName, pointToDemangledName)
+for keep(2): (type, module, functionName, decoratedName, originalName)
 
 #}
 {% for item in renderData %}
 {% if item[0] == 0 %}
-EXPORTCPP {{ item[1] }}
+NORMALEXPORT void {{ item[2] }}()
 {
-    //need: {{ item[3] }}
-    //point to: {{ item[4] }}
-	__asm PUSH m_dwReturn[{{ loop.index0 }} * TYPE long];
-	__asm CALL DWORD PTR [TlsSetValue];
-
-	GetAddress("{{ item[2] }}")();
-
-	__asm PUSH EAX;
-	__asm PUSH m_dwReturn[{{ loop.index0 }} * TYPE long];
-	__asm CALL DWORD PTR [TlsGetValue];
-	__asm XCHG EAX, [ESP];
-	__asm RET;
+    //redirect
+    //need: {{ item[4] }}
+    //      {{ item[3] }}
+    //point to: {{ item[6] }}
+	GetAddress(m_{{ item[1] }}Module, "{{ item[5] }}");
+	__asm JMP EAX;
 }
 {% elif item[0] == 1 %}
-EXPORTCPP {{ item[1] }}
+HANDEXPORT void {{ item[2] }}()
 {
-    //function: {{ item[3] }}
-	GetAddress("{{ item[2] }}");
+    //TODO: hand process
+    //need: {{ item[4] }}
+    //      {{ item[3] }}
+    //point to: {{ item[6] }}
+	GetAddress(m_{{ item[1] }}Module, "{{ item[5] }}");
 	__asm JMP EAX;
 }
 {% elif item[0] == 2 %}
-//field: {{ item[2] }}
-EXPORT {{ item[1] }};
+NORMALEXPORT void {{ item[2] }}()
+{
+    //keep
+    //function: {{ item[4] }}
+	GetAddress(m_{{ item[1] }}Module, "{{ item[3] }}");
+	__asm JMP EAX;
+}
 {% else %}
 //lost target
 {% endif %}

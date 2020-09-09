@@ -1,0 +1,36 @@
+filename = GetOpenFile("Open...", "All\n*.*\nexe\n*.exe\ndll\n*.dll\n")
+if filename == null then
+    return
+end
+
+pehandle = OpenFile(filename)
+if pehandle == null then
+    return
+end
+
+etoffset = GetOffset(pehandle, PE_ExportDirectory)
+if etoffset == null then
+    return
+end
+
+nameCountPos = etoffset + 24
+nameArrayPos = etoffset + 32
+nameDllPos = etoffset + 12
+nameCount = ReadDword(pehandle, nameCountPos)
+nameArray = RvaToOffset(pehandle, ReadDword(pehandle, nameArrayPos))
+nameDllOffset = RvaToOffset(pehandle, ReadDword(pehandle, nameArrayPos))
+
+ck3Name = {0x43, 0x4B, 0x33, 0x00}
+WriteBytes(pehandle, nameDllOffset, ck3Name)
+
+targetFunctionName = {}
+{% for item in cffData %}targetFunctionName[{{ loop.index }}]={{ item }}
+{% endfor %}
+
+for i = 1, nameCount do
+    currentNameOffset = RvaToOffset(pehandle, ReadDword(pehandle, nameArray + (i - 1) * 4))
+    resName = ReadString(pehandle, currentNameOffset, false)
+    retn=WriteBytes(pehandle, currentNameOffset, targetFunctionName[i])
+end
+
+SaveFile(pehandle)
