@@ -199,6 +199,8 @@ Column block       |    +--> |    |    +    |    | <--+    |    |    +    |
 
 ### 构建
 
+#### Vanilla block
+
 一个物体的构建遵循如下过程：
 
 将起始方块的中心当作坐标原点开始构建，因为默认是以左上角为原点的，因此需要根据方块大小平移一定位置（小块1.25，大块2.5来达到上述要求）
@@ -206,3 +208,54 @@ Column block       |    +--> |    |    +    |    | <--+    |    |    +    |
 然后读取延伸规定，按默认延伸方向延伸。
 
 然后读取旋转参数，对模型中的每一个三维坐标乘以旋转矩阵，达到旋转目的，之后再平移到正确的起始方块位置。
+
+#### Derived block
+
+拆分成Vanilla block然后构建。
+
+### Smashed vanilla blocks
+
+#### StartPosition & ExpandPosition
+
+表述方块的起始和延伸位置的二维坐标格式：`x,y;xSyncReduce,xSync,ySyncReduce,ySync`
+
+其中`xy`表示坐标，为非负整数，分号和逗号不可以省略
+
+`SyncReduce`，正整数，表示当后续同步设置时，会将同步选项所同步的长度减去此指定数值。如果不存在，默认为0。
+
+`Sync`可以由下列字符其中之一，表述当前指定方向与主方块的哪个延伸方向进行同步。如果`Sync`不存在，表述不同步。
+
+* `+d1` 同步主延伸方向正向
+* `-d1` 同步主延伸方向反向
+* `+d2` 同步次延伸方向正向
+* `-d2` 同步次延伸方向反向
+
+一些示例：
+* `0,0;,,,`
+* `0,0;,+d1,+d2`
+* `1,1;2,+d1,2,+d2`
+
+#### SideSync
+
+指定Derived block中Smashed vanilla block的边同步属性，遵循如下格式`2dTop;2dRight;2dBottom;2dLeft;3dTop;3dBottom`
+
+其中每一项可以是下面列表中的任意一项，分隔符分号不可省略，不可留空：
+
+直接指定是否要这个面：
+
+* `True`
+* `False`
+
+与主方块同步属性：
+
+* `2dTop`
+* `2dRight`
+* `2dBottom`
+* `2dLeft`
+* `3dTop`
+* `3dBottom`
+
+示例：
+
+* `True;False;2dLeft;3dTop;3dTop;3dBottom`
+* `True;True;True;True;True;True`
