@@ -1,4 +1,4 @@
-function freqScopeList = dft(timeScopeList, pointCount)
+function freqScopeList = selfdft(timeScopeList, pointCount)
   realPointCount = length(timeScopeList);
   freqScopeList = [];
   
