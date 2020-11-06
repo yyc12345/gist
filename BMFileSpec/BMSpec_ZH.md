@@ -6,7 +6,7 @@ BM文件，全称Ballance Map文件，一种专门用于在Virtools和其他3D�
 
 本文档只是介绍BM文件格式，并不会介绍格式中某些项目具体会被导入导出程序如何应用，这是导入导出程序设计者定义行为。不同的导入导出程序将会有不一样的行为，因此请查看相关程序的设定文档。
 
-此标准最新的正式版本为v1.2。此版本为v1.2。
+此标准最新的正式版本为v1.3。此版本为v1.3。
 
 ## 前言
 
@@ -89,6 +89,7 @@ BM文件，全称Ballance Map文件，一种专门用于在Virtools和其他3D�
 |IS_FORCED_NO_COMPONENT|bool|
 |IS_HIDDEN|bool|
 |WORLD_MATRIX|float\[4\]\[4\]|
+|GROUP_LIST|-|
 |MESH_INDEX|unsigned int32_t|
 
 ### IS_COMPONENT
@@ -134,6 +135,13 @@ WORLD_MATRIX（世界变换矩阵）表征物体的移动，旋转和缩放，�
 |**mat[2][]**|mat[1][0]|mat[1][2]|mat[1][1]|mat[1][3]|
 |**mat[3][]**|mat[3][0]|mat[3][2]|mat[3][1]|mat[3][3]|
 
+### GROUP_LIST
+
+表明物体所归属的组，对应于Virtools中组的概念（一个物体可以归属多个组，一个组里面可以有多个物体）。
+
+存储方式先存储一个`unsigned int32_t`表示当前列表的长度，之后依次存储`string`表示对应组的名称。
+
+例如，物体不属于任何组，则直接写入一个`unsigned int32_t`的`0`即可。
 
 ### MESH_INDEX
 
