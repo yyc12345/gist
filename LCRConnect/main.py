@@ -62,8 +62,12 @@ def LoadFromFile(name):
             OneComponentList.append(newobj)
     
     # construct two component list
-    for i in OneComponentList:
-        for j in OneComponentList:
+    length = len(OneComponentList)
+    for i_index in range(length):
+        for j_index in range(i_index, length):
+            i = OneComponentList[i_index]
+            j = OneComponentList[j_index]
+
             # series
             newobj = TwoComponent()
             newobj.Value1 = i.Value
@@ -112,20 +116,26 @@ def LoadFromCache(name):
     (counter, ) = struct.unpack("I", f.read(4))
     for i in range(counter):
         newobj = OneComponent()
-        (newobj.Value1, newobj.Value) = struct.unpack("dd", f.read(2 * 8))
+        newobj.Value1 = ReadDouble(f)
+        newobj.Value = ReadDouble(f)
         OneComponentList.append(newobj)
     (counter, ) = struct.unpack("I", f.read(4))
     for i in range(counter):
         newobj = TwoComponent()
-        (newobj.Value1, newobj.Value2, newobj.IsSeries, newobj.Value) = struct.unpack("ddQd", f.read(3 * 8 + 8))
-        newobj.IsSeries = newobj.IsSeries == 1
+        newobj.Value1 = ReadDouble(f)
+        newobj.Value2 = ReadDouble(f)
+        newobj.IsSeries = ReadBoolean(f)
+        newobj.Value = ReadDouble(f)
         TwoComponentList.append(newobj)
     (counter, ) = struct.unpack("I", f.read(4))
     for i in range(counter):
         newobj = ThreeComponent()
-        (newobj.Value1, newobj.Value2, newobj.Value3, newobj.IsSeries1, newobj.IsSeries2, newobj.Value) = struct.unpack("dddQQd", f.read(4 * 8 + 2 * 8))
-        newobj.IsSeries1 = newobj.IsSeries1 == 1
-        newobj.IsSeries2 = newobj.IsSeries2 == 1
+        newobj.Value1 = ReadDouble(f)
+        newobj.Value2 = ReadDouble(f)
+        newobj.Value3 = ReadDouble(f)
+        newobj.IsSeries1 = ReadBoolean(f)
+        newobj.IsSeries2 = ReadBoolean(f)
+        newobj.Value = ReadDouble(f)
         ThreeComponentList.append(newobj)
 
     f.close()
@@ -133,18 +143,44 @@ def LoadFromCache(name):
 def SaveAsCache(name):
     # in cache, is series should follow resistor mode
     f = open(name + '.cache', 'wb')
-    f.write(struct.pack("I", len(OneComponentList)))
+    WriteInt(f, len(OneComponentList))
     for i in OneComponentList:
-        f.write(struct.pack("dd", i.Value1, i.Value))
-    f.write(struct.pack("I", len(TwoComponentList)))
+        WriteDouble(f, i.Value1)
+        WriteDouble(f, i.Value)
+    WriteInt(f, len(TwoComponentList))
     for i in TwoComponentList:
-        f.write(struct.pack("ddQd", i.Value1, i.Value2, 1 if i.IsSeries else 0, i.Value))
-    f.write(struct.pack("I", len(ThreeComponentList)))
+        WriteDouble(f, i.Value1)
+        WriteDouble(f, i.Value2)
+        WriteBoolean(f, i.IsSeries)
+        WriteDouble(f, i.Value)
+    WriteInt(f, len(ThreeComponentList))
     for i in ThreeComponentList:
-        f.write(struct.pack("dddQQd", i.Value1, i.Value2, i.Value3, 1 if i.IsSeries1 else 0, 1 if i.IsSeries2 else 0, i.Value))
+        WriteDouble(f, i.Value1)
+        WriteDouble(f, i.Value2)
+        WriteDouble(f, i.Value3)
+        WriteBoolean(f, i.IsSeries1)
+        WriteBoolean(f, i.IsSeries2)
+        WriteDouble(f, i.Value)
 
     f.close()
 
+def ReadDouble(fs):
+    return struct.unpack("d", fs.read(8))[0]
+
+def ReadInt(fs):
+    return struct.unpack("I", fs.read(4))[0]
+
+def ReadBoolean(fs):
+    return struct.unpack("?", fs.read(1))[0]
+
+def WriteDouble(fs, num):
+    fs.write(struct.pack("d", num))
+
+def WriteInt(fs, num):
+    fs.write(struct.pack("I", num))
+
+def WriteBoolean(fs, num):
+    fs.write(struct.pack("?", num))
 
 def OutputAsHuman(v):
     if v / 1e-12 < 1e3:
