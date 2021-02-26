@@ -1,0 +1,8 @@
+Need zlib.net Nuget package
+Copy zlib.net's Adler32.cs in this folder and build them. zlib.net's Adler32 is a sealed class. I couldn't use it via Nuget package. What a sh*t design!
+
+Encode example switch
+-c "E:\Virtools\Virtools Dev 3.5\LanguagePacks\decode.dat" "E:\Virtools\Virtools Dev 3.5\LanguagePacks\english.nlp"
+
+Decode example switch
+-d "E:\Virtools\Virtools Dev 3.5\LanguagePacks\english.nlp" "E:\Virtools\Virtools Dev 3.5\LanguagePacks\decode.dat"
