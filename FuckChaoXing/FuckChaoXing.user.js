@@ -29,6 +29,48 @@
         return stack;
     };
 
+    // ================================ nitification
+    window.fuckingChaoXing.notification = {};
+    window.fuckingChaoXing.notification.allow = undefined;
+    window.fuckingChaoXing.notification.funcStop = function() {
+        if (typeof(window.fuckingChaoXing.notification.allow) != 'undefined' && window.fuckingChaoXing.notification.allow) {
+            var notification = new Notification("视频结束，请切换课程！");
+        }
+    }
+    window.fuckingChaoXing.notification.funcPause = function() {
+        if (typeof(window.fuckingChaoXing.notification.allow) != 'undefined' &&window.fuckingChaoXing.notification.allow) {
+            var notification = new Notification("视频暂停，请回答题目！");
+        }
+    }
+    window.fuckingChaoXing.notification.funcCheck = function() {
+        if (typeof(window.fuckingChaoXing.notification.allow) == 'undefined') {
+            // 先检查浏览器是否支持
+            if (!("Notification" in window)) {
+                window.fuckingChaoXing.notification.allow = false;
+            }
+
+            // 检查用户是否同意接受通知
+            else if (Notification.permission === "granted") {
+                // If it's okay let's create a notification
+                window.fuckingChaoXing.notification.allow = true;
+                return;
+            }
+
+            // 否则我们需要向用户获取权限
+            else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(function (permission) {
+                    // 如果用户接受权限，我们就可以发起一条消息
+                    if (permission === "granted") {
+                        window.fuckingChaoXing.notification.allow = true;
+                        return;
+                    }
+                });
+            }
+
+            window.fuckingChaoXing.notification.allow = false;
+        }
+    }
+
     // ================================ video detectator
     window.fuckingChaoXing.update = function() {
         window.fuckingChaoXing.videos = [];
@@ -55,6 +97,9 @@
     fuckingButton.addEventListener("click", function() {
         window.fuckingChaoXing.update();
 
+        // check notification
+        window.fuckingChaoXing.notification.funcCheck();
+
         // first, try remove mouseout event, clone it
         var mouseoutEventList = window.mouseoutEvents.concat();
         for(var q = 0; q < mouseoutEventList.length; q++) {
@@ -66,6 +111,11 @@
         for(var i = 0; i < window.fuckingChaoXing.videos.length; i++) {
             let setIntervalList = window.fuckingChaoXing.videos[i].setInterval;
             for(var j in setIntervalList) {
+                // add notification step
+                window.fuckingChaoXing.videos[i].videoObj.on('ended', window.fuckingChaoXing.notification.funcStop);
+                window.fuckingChaoXing.videos[i].videoObj.on('pause', window.fuckingChaoXing.notification.funcPause);
+
+                // delete interval step
                 let item = setIntervalList[j];
                 if (item.timeout == 1000 && item.callback.name == 'n') {
                     // this one is shit interval, shutdown it
@@ -77,6 +127,10 @@
         }
 
         fuckingButton.innerText = "仙人已乘黄鹤去：共" + window.fuckingChaoXing.videos.length + "个视频，处理了" + successCount + "个";
+        window.setTimeout(function() {
+            // restore text
+            fuckingButton.innerText = "超星，我日你先人";
+        }, 10000);
     });
     document.querySelector('#mainid').parentNode.insertBefore(fuckingButton, document.querySelector('#mainid'));
 
