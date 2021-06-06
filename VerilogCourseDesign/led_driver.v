@@ -9,10 +9,10 @@ module led_driver(
     output wire[7:0] led_data
 );
 
-parameter enable_led0 = 4'b0001,
-        enable_led1 = 4'b0010,
-        enable_led2 = 4'b0100,
-        enable_led3 = 4'b1000;
+parameter enable_led0 = 4'b1110,
+        enable_led1 = 4'b1101,
+        enable_led2 = 4'b1011,
+        enable_led3 = 4'b0111;
 
 wire freq_splitter_out;
 reg[3:0] gotten_bcd;

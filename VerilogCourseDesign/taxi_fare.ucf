@@ -1,0 +1,22 @@
+NET "clk" LOC = "B8";
+
+NET "switch<0>" LOC = "P11";
+NET "switch<1>" LOC = "L3";
+
+NET "button_rst" LOC = "G12";
+NET "button_distance" LOC = "M4";
+NET "button_time" LOC = "A7";
+
+NET "led_selector<0>" LOC = "F12";
+NET "led_selector<1>" LOC = "J12";
+NET "led_selector<2>" LOC = "M13";
+NET "led_selector<3>" LOC = "K14";
+
+NET "led_data<0>" LOC = "L14";
+NET "led_data<1>" LOC = "H12";
+NET "led_data<2>" LOC = "N14";
+NET "led_data<3>" LOC = "N11";
+NET "led_data<4>" LOC = "P12";
+NET "led_data<5>" LOC = "L13";
+NET "led_data<6>" LOC = "M12";
+NET "led_data<7>" LOC = "N13";
