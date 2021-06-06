@@ -16,6 +16,7 @@ parameter enable_led0 = 4'b0001,
 
 wire freq_splitter_out;
 reg[3:0] gotten_bcd;
+wire freq_splitter_out[1:0];
 wire need_dot;
 
 assign need_dot = ((led_selector == enable_led1) && is_fare_display) ? 1'b1 : 1'b0;
@@ -27,15 +28,26 @@ led_encoder led_coder(
 );
 
 // instance a counter to reduce frequency
-counter #(.MAX_VALUE(1023), .BIT_WIDTH(10)) freq_splitter(
+// this FPGA use 50MHz clock
+// 2 freq splitter(1024 + 128) will reduce the freq to around 381Hz
+// the best freq for 4 bit led displaying is 1KHz - 60Hz accoring to manual
+// then minus 2 bit for the last splitter(128 -> 32), because led have 4 bit
+// the splitted freq is used for the display duration for each bit, not 4 bits.
+counter #(.MAX_VALUE(10'd1023), .BIT_WIDTH(10)) freq_splitter0(
     .clk(clk),
     .rst(1'b1),
     .count(),
-    .cout(freq_splitter_out)
+    .cout(freq_splitter_out[0])
+);
+counter #(.MAX_VALUE(5'd31), .BIT_WIDTH(5)) freq_splitter1(
+    .clk(~freq_splitter_out[0]),
+    .rst(1'b1),
+    .count(),
+    .cout(freq_splitter_out[1])
 );
 
 always @(posedge clk) begin
-//always @(posedge freq_splitter_out) begin
+//always @(negedge freq_splitter_out[1]) begin
     case (led_selector)
         enable_led0: begin
             led_selector <= enable_led1;
