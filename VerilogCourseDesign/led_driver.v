@@ -3,6 +3,8 @@
 module led_driver(
     input wire[15:0] input_data,
     input wire clk,
+    input wire is_time_display,
+    input wire is_fare_display,
     output reg[3:0] led_selector,   // led 0 enable signal is the lowest bit
     output wire[7:0] led_data
 );
@@ -14,10 +16,13 @@ parameter enable_led0 = 4'b0001,
 
 wire freq_splitter_out;
 reg[3:0] gotten_bcd;
+wire need_dot;
+
+assign need_dot = ((led_selector == enable_led1) && is_fare_display) ? 1'b1 : 1'b0;
 
 led_encoder led_coder(
     .bcd_data(gotten_bcd),
-    .need_dot(1'b0),
+    .need_dot(need_dot),
     .led_data(led_data)
 );
 

@@ -30,27 +30,35 @@ initial begin
     button_distance <= 1'b0;
     button_time <= 1'b0;
 
-    #15;
+    #5;
     button_rst <= 1'b1;
-    #7;
+    #5;
     button_rst <= 1'b0;
 
-    /*
-    #15;
     repeat(21) begin
-        button_time <= 1'b1;
-        #7;
-        button_time <= 1'b0;
-        #7;
+        #1
+        button_time <= ~button_time;
+        #1
+        button_time <= ~button_time;
     end
-    */
 
-    #15;
+    #5;
+    button_rst <= 1'b1;
+    #5;
+    button_rst <= 1'b0;
+
+    repeat(2) begin
+        #1
+        button_time <= ~button_time;
+        #1
+        button_time <= ~button_time;
+    end
+
     repeat(6) begin
-        button_distance <= 1'b1;
-        #7;
-        button_distance <= 1'b0;
-        #7;
+        #1
+        button_distance <= ~button_distance;
+        #1
+        button_distance <= ~button_distance;
     end
 
     #15;
