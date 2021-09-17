@@ -10,17 +10,28 @@
 #define COMPILER_RULE_EquationSide 6
 #define COMPILER_RULE_Equation 7
 
+int elements_length = 118;
+char *elements[] = {"H","He","Li","Be","B","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl","Ar","K",
+"Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr","Rb","Sr","Y","Zr",
+"Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe","Cs","Ba","La","Ce","Pr","Nd","Pm",
+"Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu","Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb",
+"Bi","Po","At","Rn","Fr","Ra","Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr",
+"Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn","Nh","Fl","Mc","Lv","Ts","Og"
+};
+int get_elements_id(const char* ele_name) {
+    int i;
+    for(i = 0; i < elements_length; i++) {
+        if (strcmp(ele_name, elements[i]) == 0) return i;
+    }
+    return -1;
+}
+
 //int yydebug = 1;
 extern FILE * yyin;
 extern FILE * yyout;
 FILE * binary_file;
 void write_binary_int(int value) {
     fwrite(&value, sizeof(value), 1, binary_file);
-}
-void write_binary_str(const char* value) {
-    int len = strlen(value);
-    write_binary_int(len);
-    fwrite(value, sizeof(char), len, binary_file);
 }
 
 //在lex.yy.c里定义，会被yyparse()调用。在此声明消除编译和链接错误。
@@ -192,14 +203,14 @@ ELEMENTS
 {
     write_binary_int(COMPILER_RULE_Atom);
     write_binary_int(1);
-    write_binary_str($1);
+    write_binary_int(get_elements_id($1));
     fprintf(yyout, "%s <atom>(1) ", $1);
 }
 | ELEMENTS NUMBER
 {
     write_binary_int(COMPILER_RULE_Atom);
     write_binary_int(2);
-    write_binary_str($1);
+    write_binary_int(get_elements_id($1));
     write_binary_int($2);
     fprintf(yyout, "%s %d <atom>(2) ", $1, $2);
 };
