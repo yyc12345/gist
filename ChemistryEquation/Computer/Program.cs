@@ -26,7 +26,10 @@ namespace EquationBalance {
             var data = ReadTree(args[0]);
             foreach (var item in data) {
                 Console.WriteLine(item.showcase);
-                GetEquationMatrix(item);
+                var mat = GetEquationMatrix(item);
+                Console.Write("\n");
+                SolveMatrix(mat);
+                Console.Write("\n");
             }
 
             Console.ReadKey();
@@ -295,6 +298,56 @@ namespace EquationBalance {
             return mat;
         }
 
+        static BigInteger[][] SolveMatrix(Matrix mat) {
+            int p_row = 0;
+            int p_col = 0;
+
+            while (p_row < mat.rows && p_col < mat.columns) {
+                if (mat.is_blank(p_col, p_row)) {
+                    p_col++;
+                    continue;
+                    // all of this column is zero, skip this and go to next column
+                }
+                if (mat.eles[p_row][p_col] == 0) {
+                    // but current row is start with zero, we need swap it with a non-zero start row
+                    mat.swap(p_row, mat.peek_nonzero(p_col, p_row));
+                }
+
+                // get lcm
+                if (mat.eles[p_row][p_col].Sign < 0) mat.reverse_row(p_row);
+                var lcm = mat.lcm_column(p_col, p_row);
+                var div = lcm / mat.eles[p_row][p_col];
+                for (int r = p_row + 1; r < mat.rows; r++) {
+                    if (mat.eles[r][p_col].IsZero) continue; // skip zero start row
+
+                    var divt = lcm / mat.eles[r][p_col];
+                    if (divt.Sign < 0) divt = -divt;
+
+                    mat.add2(p_col, p_row, div, r, divt,
+                        mat.eles[r][p_col].Sign > 0
+                    );
+                }
+
+                // gcd current line
+                mat.gcd_row(p_row);
+
+                // process next;
+                p_col++;
+                p_row++;
+            }
+
+#if DEBUG
+            for (int _r = 0; _r < mat.rows; _r++) {
+                for (int _c = 0; _c < mat.columns; _c++) {
+                    Console.Write(mat.eles[_r][_c]);
+                    Console.Write("\t");
+                }
+                Console.Write("\n");
+            }
+#endif
+
+            return null;
+        }
     }
 
     public static class Utils {
@@ -380,6 +433,104 @@ namespace EquationBalance {
         public BigInteger[][] eles;
         public int rows;
         public int columns;
+
+        public void swap(int row1, int row2) {
+            var swap = eles[row1];
+            eles[row1] = eles[row2];
+            eles[row2] = swap;
+        }
+
+        public void add2(int start_col, int row, BigInteger num, int row_target, BigInteger num_target, bool is_minus) {
+            for (int c = start_col; c < columns; c++) {
+                eles[row_target][c] *= num_target;
+                if (is_minus) eles[row_target][c] -= eles[row][c] * num;
+                else eles[row_target][c] += eles[row][c] * num;
+            }
+        }
+
+        public void reverse_row(int row) {
+            for (int c = 0; c < columns; c++) {
+                if (eles[row][c].Sign != 0) eles[row][c] = -eles[row][c];
+            }
+        }
+
+        public bool is_blank(int col, int start_row) {
+            for (int r = start_row; r < rows; r++) {
+                if (eles[r][col] != 0) return false;
+            }
+            return true;
+        }
+
+        public BigInteger lcm_column(int col, int start_row) {
+            BigInteger v = 1;
+            for (int r = start_row; r < rows; r++) {
+                if (eles[r][col] != 0) v = lcm(v, eles[r][col]);
+            }
+            return v;
+        }
+
+        public void gcd_row(int row) {
+            BigInteger v = 1;
+            bool is_non_zero = false;
+            for (int c = 0; c < columns; c++) {
+                if (eles[row][c] != 0) {
+                    if (is_non_zero) {
+                        v = gcd(v, eles[row][c]);
+                    } else {
+                        v = eles[row][c];
+                        is_non_zero = true;
+                    }
+                }
+            }
+
+            if (!is_non_zero) return;
+
+            for (int c = 0; c < columns; c++) {
+                eles[row][c] /= v;
+            }
+        }
+
+        public int peek_nonzero(int col, int start_row) {
+            for (int r = start_row; r < rows; r++) {
+                if (eles[r][col] != 0) return r;
+            }
+            return start_row;
+        }
+
+        public int rank() {
+            for(int r = rows; r >= 0; r--) {
+                for(int c = 0; c < columns; c++) {
+                    if (eles[r][c] != 0) return r + 1;
+                }
+            }
+            return 0;
+        }
+
+        BigInteger gcd(BigInteger x, BigInteger y) {
+            if (x.Sign < 0) x = -x;
+            if (y.Sign < 0) y = -y;
+
+            BigInteger cache;
+            if (x < y) {
+                cache = x;
+                x = y;
+                y = cache;
+            }
+
+            while (y != 0) {
+                cache = x % y;
+                x = y;
+                y = cache;
+            }
+            return x;
+        }
+
+        BigInteger lcm(BigInteger x, BigInteger y) {
+            if (x.Sign < 0) x = -x;
+            if (y.Sign < 0) y = -y;
+
+            return x / gcd(x, y) * y;
+        }
     }
 
 }
