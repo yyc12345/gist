@@ -27,9 +27,7 @@ namespace EquationBalance {
             foreach (var item in data) {
                 Console.WriteLine(item.showcase);
                 var mat = GetEquationMatrix(item);
-                Console.Write("\n");
                 SolveMatrix(mat);
-                Console.Write("\n");
             }
 
             Console.ReadKey();
@@ -293,12 +291,14 @@ namespace EquationBalance {
                 }
                 Console.Write("\n");
             }
+            Console.Write("\n");
 #endif
 
             return mat;
         }
 
         static BigInteger[][] SolveMatrix(Matrix mat) {
+            // transform matrix
             int p_row = 0;
             int p_col = 0;
 
@@ -310,7 +310,7 @@ namespace EquationBalance {
                 }
                 if (mat.eles[p_row][p_col] == 0) {
                     // but current row is start with zero, we need swap it with a non-zero start row
-                    mat.swap(p_row, mat.peek_nonzero(p_col, p_row));
+                    mat.swap(p_row, mat.pick_nozero(p_col, p_row));
                 }
 
                 // get lcm
@@ -338,15 +338,116 @@ namespace EquationBalance {
 
 #if DEBUG
             for (int _r = 0; _r < mat.rows; _r++) {
+                Console.Write("\t");
                 for (int _c = 0; _c < mat.columns; _c++) {
                     Console.Write(mat.eles[_r][_c]);
                     Console.Write("\t");
                 }
                 Console.Write("\n");
             }
+            Console.Write("\n");
 #endif
 
-            return null;
+            // try solve transformed matrix
+            // get solution count
+            var x_count = mat.columns - mat.rank();
+            if (x_count <= 0) {
+                // only zero solution or no solution
+                return null;
+            }
+
+            // pick free variable
+            int[] free_var_index = new int[x_count];
+            int[] pending_index = new int[mat.columns - x_count];
+            int pointer_fvi = 0;
+            int pointer_pending = 0;
+            int top = -1;
+            for (int c = 0; c < mat.columns; c++) {
+                for (int r = mat.rows - 1; r >= 0; r--) {
+                    if (!mat.eles[r][c].IsZero) {
+                        // non-zero, mark it
+                        if (top == r) {
+                            // not the first non-zero item, use it, and goto next col
+                            free_var_index[pointer_fvi] = c;
+                            pointer_fvi++;
+                        } else {
+                            // no, update top
+                            // add this column to pending index
+                            pending_index[pointer_pending] = c;
+                            pointer_pending++;
+                            top = r;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            //construct each fundemental solution
+            var result = new BigInteger[x_count][];
+            for (int x = 0; x < x_count; x++) {
+                result[x] = new BigInteger[mat.columns];
+                for (int ix = 0; ix < mat.columns; ix++) {
+                    result[x][ix] = 0;
+                }
+            }
+
+            for (int xid = 0; xid < x_count; xid++) {
+                // set pending pointer
+                pointer_pending = pending_index.Length - 1;
+                // write current free variable
+                result[xid][free_var_index[xid]] = 1;
+                for (int r = mat.rows - 1; r >= 0; r--) {
+                    // get sum of all item in current row
+                    BigInteger num = 0, deno = 0;
+                    for (int c = 0; c < mat.columns; c++) {
+                        if (c == pending_index[pointer_pending]) {
+                            deno = -mat.eles[r][c];
+                        } else if (!result[xid][c].IsZero) {
+                            num = num + result[xid][c] * mat.eles[r][c];
+                        }
+                    }
+
+                    if (deno.Sign < 0) {
+                        deno = -deno;
+                        num = -num;
+                    }
+
+                    // write data
+                    // and gcd existed item
+                    BigInteger gcd = 0;
+                    result[xid][pending_index[pointer_pending]] = num;
+                    for (int c = 0; c < mat.columns; c++) {
+                        if (c == pending_index[pointer_pending]) {
+                            result[xid][c] = num;
+                            gcd = Utils.gcd(gcd, num);
+                        } else if (!result[xid][c].IsZero) {
+                            result[xid][c] = result[xid][c] * deno;
+                            gcd = Utils.gcd(gcd, result[xid][c]);
+                        }
+                    }
+                    for (int c = 0; c < mat.columns; c++) {
+                        if (!result[xid][c].IsZero) {
+                            result[xid][c] /= gcd;
+                        }
+                    }
+
+                    pointer_pending--;
+                }
+            }
+
+
+#if DEBUG
+            for (int _r = 0; _r < x_count; _r++) {
+                for (int _c = 0; _c < mat.columns; _c++) {
+                    Console.Write(result[_r][_c]);
+                    Console.Write("\t");
+                }
+                Console.Write("\n");
+            }
+            Console.Write("\n");
+#endif
+
+            return result;
         }
     }
 
@@ -375,6 +476,32 @@ namespace EquationBalance {
                 dict[pair.Key] = num * pair.Value;
             }
             return dict;
+        }
+
+        public static BigInteger gcd(BigInteger x, BigInteger y) {
+            if (x.Sign < 0) x = -x;
+            if (y.Sign < 0) y = -y;
+
+            BigInteger cache;
+            if (x < y) {
+                cache = x;
+                x = y;
+                y = cache;
+            }
+
+            while (y != 0) {
+                cache = x % y;
+                x = y;
+                y = cache;
+            }
+            return x;
+        }
+
+        public static BigInteger lcm(BigInteger x, BigInteger y) {
+            if (x.Sign < 0) x = -x;
+            if (y.Sign < 0) y = -y;
+
+            return x / gcd(x, y) * y;
         }
     }
 
@@ -464,7 +591,7 @@ namespace EquationBalance {
         public BigInteger lcm_column(int col, int start_row) {
             BigInteger v = 1;
             for (int r = start_row; r < rows; r++) {
-                if (eles[r][col] != 0) v = lcm(v, eles[r][col]);
+                if (eles[r][col] != 0) v = Utils.lcm(v, eles[r][col]);
             }
             return v;
         }
@@ -475,7 +602,7 @@ namespace EquationBalance {
             for (int c = 0; c < columns; c++) {
                 if (eles[row][c] != 0) {
                     if (is_non_zero) {
-                        v = gcd(v, eles[row][c]);
+                        v = Utils.gcd(v, eles[row][c]);
                     } else {
                         v = eles[row][c];
                         is_non_zero = true;
@@ -490,7 +617,7 @@ namespace EquationBalance {
             }
         }
 
-        public int peek_nonzero(int col, int start_row) {
+        public int pick_nozero(int col, int start_row) {
             for (int r = start_row; r < rows; r++) {
                 if (eles[r][col] != 0) return r;
             }
@@ -498,39 +625,14 @@ namespace EquationBalance {
         }
 
         public int rank() {
-            for(int r = rows; r >= 0; r--) {
-                for(int c = 0; c < columns; c++) {
+            for (int r = rows - 1; r >= 0; r--) {
+                for (int c = 0; c < columns; c++) {
                     if (eles[r][c] != 0) return r + 1;
                 }
             }
             return 0;
         }
 
-        BigInteger gcd(BigInteger x, BigInteger y) {
-            if (x.Sign < 0) x = -x;
-            if (y.Sign < 0) y = -y;
-
-            BigInteger cache;
-            if (x < y) {
-                cache = x;
-                x = y;
-                y = cache;
-            }
-
-            while (y != 0) {
-                cache = x % y;
-                x = y;
-                y = cache;
-            }
-            return x;
-        }
-
-        BigInteger lcm(BigInteger x, BigInteger y) {
-            if (x.Sign < 0) x = -x;
-            if (y.Sign < 0) y = -y;
-
-            return x / gcd(x, y) * y;
-        }
     }
 
 }
