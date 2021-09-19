@@ -27,7 +27,9 @@ namespace EquationBalance {
             foreach (var item in data) {
                 Console.WriteLine(item.showcase);
                 var mat = GetEquationMatrix(item);
-                SolveMatrix(mat);
+                var res = SolveMatrix(mat);
+                var str = PrintResult(item, res);
+                Console.WriteLine(str);
             }
 
             Console.ReadKey();
@@ -231,8 +233,10 @@ namespace EquationBalance {
                         break;
                     case EquationTreeNodeType.EquationSide:
                         if (inode.stage == 1) {
-                            foreach (var item in inode.node.children)
-                                stack.Push(new TreeNodeWithStage(item));
+                            // reverse push
+                            for (int i = inode.node.children.Length - 1; i >= 0; i--) {
+                                stack.Push(new TreeNodeWithStage(inode.node.children[i]));
+                            }
                             inode.stage++;
                             continue;
                         }
@@ -448,6 +452,80 @@ namespace EquationBalance {
 #endif
 
             return result;
+        }
+
+        static string PrintResult(EquationTreeNode root, BigInteger[][] solutions) {
+            if (solutions == null) {
+                return "No solution or only zero solution.";
+            }
+
+            var stack = new Stack<TreeNodeWithStage>();
+            var pointer_solution = 0;
+            var solution_sb = new StringBuilder();
+            stack.Push(new TreeNodeWithStage(root));
+            while (stack.Count != 0) {
+                var inode = stack.Peek();
+
+                switch (inode.node.type) {
+                    case EquationTreeNodeType.Atom:
+                    case EquationTreeNodeType.BracketAtomGroup:
+                    case EquationTreeNodeType.AtomGroup:
+                    case EquationTreeNodeType.IntervalPart:
+                    case EquationTreeNodeType.EquationPart:
+                        if (solutions.Length == 1) {
+                            // just output number
+                            solution_sb.Append($"{solutions[0][pointer_solution]} ");
+                        } else {
+                            // output with ki format
+                            solution_sb.Append(" (");
+                            for (int i = 0; i < solutions.Length; i++) {
+                                if (i != 0) solution_sb.Append(" + ");
+                                solution_sb.Append($"k{i + 1} * {solutions[i][pointer_solution]}");
+                            }
+                            solution_sb.Append(") ");
+                        }
+
+                        //output material
+                        solution_sb.Append(inode.node.showcase);
+                        // increase pointer
+                        pointer_solution++;
+                        break;
+                    case EquationTreeNodeType.EquationSide:
+                        if (inode.stage == 1) {
+                            if (inode.node.ruleId == 1) {
+                                stack.Push(new TreeNodeWithStage(inode.node.children[0]));
+                                inode.stage++; // double ++ to skip
+                            } else if (inode.node.ruleId == 2) {
+                                // reverse push
+                                stack.Push(new TreeNodeWithStage(inode.node.children[0]));
+                            }
+                            inode.stage++;
+                            continue;
+                        } else if (inode.stage == 2) {
+                            solution_sb.Append(" + ");
+                            stack.Push(new TreeNodeWithStage(inode.node.children[1]));
+                            inode.stage++;
+                            continue;
+                        }
+                        break;
+                    case EquationTreeNodeType.Equation:
+                        if (inode.stage == 1) {
+                            stack.Push(new TreeNodeWithStage(inode.node.children[0]));
+                            inode.stage++;
+                            continue;
+                        } else if (inode.stage == 2) {
+                            solution_sb.Append(" = ");
+                            stack.Push(new TreeNodeWithStage(inode.node.children[1]));
+                            inode.stage++;
+                            continue;
+                        }
+                        break;
+                }
+
+                stack.Pop();
+            }
+
+            return solution_sb.ToString();
         }
     }
 

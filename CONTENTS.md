@@ -9,6 +9,9 @@
     * CaseMigrate：迁移代码中的外置贴图列表的switch，将新的case数值匹配到旧的case代码上
 * BMERevenge：内嵌于BallanceBlenderHelper的用于快速生成路面的组件的开发文档
 * BMFileSpec：下属文件包括BM的标准文档以及yyc制图工具链的标准文档
+* ChemistryEquation：一个解化学方程式的玩意。之前初中写过一个差不多的，这次是重写。初中写的那个手撕了一个词法语法分析器，效率奇差，bug超多。
+    * FlexBison：一个用于解析化学方程式并输出Binary语法树方便读取的Flex Bison词法语法分析器模板。虽然用Flex Bison解析化学方程式有点杀鸡用牛刀，但最近在学习编译器就学习一下使用方法。
+    * Computer：读取Binary语法树，构建线性齐次方程组，使用线性代数方法求解
 * CK2Compare：包含可以批量比较不同版本CK2、VxMath DLL之间API的脚本，以及服务于本人已放弃的Virtools兼容层工程，CK3的生成器，补丁器代码。
 * Coconut-leafAssist：名字说的个人制作的日历Coconut-leaf，实际上是把ics转成csv可视化的工具
 * DecompSpiritTrail：用于暴力解析Gamepiaynmo所写BML Mod，SpiritTrail的影子球录像文件的代码
