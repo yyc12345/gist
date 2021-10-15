@@ -1,0 +1,25 @@
+close all;
+clear;
+
+{% for pair in collection %}
+x{{ loop.index }} = [{% for v in pair.x %}{{ "%.5e" | format(v) }} {% endfor %}];
+y{{ loop.index }} = [{% for v in pair.y %}{{ "%.5e" | format(v) }} {% endfor %}];
+{% endfor %}
+
+{% for pair in collection %}
+
+{% if subplot.use_subplot %}
+subplot({{ subplot.rows }}, {{ subplot.cols }}, {{ loop.index }});
+{% endif %}
+
+plot(x{{ loop.index }},y{{ loop.index }},'k');
+
+{% if not subplot.use_subplot %}
+hold on;
+{% endif %}
+
+grid on;
+xlabel('{{ pair.x_label }}');
+ylabel('{{ pair.y_label }}');
+title('{{ pair.title }}');
+{% endfor %}

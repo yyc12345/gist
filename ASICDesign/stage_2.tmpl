@@ -1,0 +1,40 @@
+* Shit test
+* Parameters and models
+.options post=1 list
+.MODEL MP PMOS (LEVEL=1 VTO=-0.4 KP=30u GAMMA=0.4 LAMBDA=0.1)
+.MODEL MN NMOS (LEVEL=1 VTO=0.4  KP=115u GAMMA=0.4 LAMBDA=0.06)
+
+* Simulation netlist and Stimulus
+* MOS format: node_name S G D SUB
+MP1     6   0   5   6   MP L=0.25u W=0.375u
+MN1     5   1   9   0   MN L=0.25u W={{ "%.3f" | format(nw * 0.375) }}u
+MN2     9   2   8   0   MN L=0.25u W={{ "%.3f" | format(nw * 0.375) }}u
+MN3     8   3   7   0   MN L=0.25u W={{ "%.3f" | format(nw * 0.375) }}u
+MN4     7   4   0   0   MN L=0.25u W={{ "%.3f" | format(nw * 0.375) }}u
+VDD     6   0   DC  5
+VIN1    1   0   PWL(0   0   8n     0       10n     5       18n     5   20n     0    R)
+VIN2    2   0   PWL(0   0   18n    0       20n     5       38n     5   40n     0    R)
+VIN3    3   0   PWL(0   0   38n    0       40n     5       78n     5   80n     0    R)
+VIN4    4   0   PWL(0   0   78n    0       80n     5       158n    5   160n    0    R)
+
+* Stimulus
+.tran  4n 200n
+
+* Measure
+.meas TRAN Vmax MAX   v(5) FROM 140n TO 170n
+.meas TRAN Vmin MIN   v(5) FROM 140n TO 170n
+.meas TRAN Vimax MAX  v(1) FROM 140n TO 170n
+.meas TRAN Vimin MIN  v(1) FROM 140n TO 170n
+
+.meas TRAN Trise TRIG V(5) val='0.1*Vmax+Vmin' TD=140ns RISE=1
++ TARG V(5) val='0.9*Vmax' RISE=1
+.meas TRAN Tfall TRIG V(5) val='0.9*Vmax' TD=140ns FALL=1
++ TARG V(5) val=='0.1*Vmax+Vmin' FALL=1
+*
+.meas TRAN TPHL TRIG v(1) VAL='(Vimax+Vimin)*0.5' TD=140ns  RISE=1
++ TARG v(5) VAL='(Vmax+Vmin)*0.5' FALL=1
+.meas TRAN TPLH TRIG v(1) VAL='(Vimax+Vimin)*0.5' TD=140ns  FALL=1
++ TARG v(5) VAL='(Vmax+Vmin)*0.5' RISE=1
+.meas TRAN Tmid PARAM='(TPHL+TPLH)*0.5'
+
+.END

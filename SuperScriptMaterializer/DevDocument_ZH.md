@@ -75,23 +75,23 @@ script.db导出的是当前Virtools文档内的脚本数。
 |字段|类型|含义|
 |:---|:---|:---|
 |thisObj|INTEGER|当前对象的`CK_ID`，后文无特殊说明则默认相同的名称均为此含义|
-|name|TEXT||
-|type|INTEGER||
-|proto_name|TEXT||
-|proto_guid|TEXT||
-|flags|INTEGER||
-|priority|INTEGER||
-|version|INTEGER||
-|pin_count|TEXT||
-|parent|INTEGER||
+|name|TEXT|当前对象的名字|
+|type|INTEGER|`CKBehavior::GetType`|
+|proto_name|TEXT|原型名称，没有原型则留空。`CKBehavior::GetPrototypeName`|
+|proto_guid|TEXT|原型的GUID，如果没有原型则填写`0,0`，格式为`guid1,guid2`，用逗号分隔Virtools的GUID的两部分|
+|flags|INTEGER|`CKBehavior::GetFlags`|
+|priority|INTEGER|`CKBehavior::GetPriority`|
+|version|INTEGER|`CKBehavior::GetVersion`|
+|pin_count|TEXT|Behavior的接口个数，由5部分组成，用`,`分隔，分别代表：pTarget, pIn, pOut, bIn, bOut|
+|parent|INTEGER|所述父级的`CK_ID`|
 
 ### bIn / bOut
 
 |字段|类型|含义|
 |:---|:---|:---|
 |thisObj|INTEGER|同上|
-|index|INTEGER||
-|name|TEXT||
+|index|INTEGER|bIn/bOut在所属behavior的次序号|
+|name|TEXT|bIn/bOut名称|
 |belong_to|INTEGER|当前对象所归属对象的`CK_ID`，用于递归查询上一级。后文无特殊说明则默认相同的名称均为此含义|
 
 ### bLink
@@ -214,10 +214,10 @@ script.db导出的是当前Virtools文档内的脚本数。
 
 |字段|类型|含义|
 |:---|:---|:---|
-|thisObj|INTEGER||
-|name|TEXT||
-|index|INTEGER||
-|behavior|INTEGER||
+|thisObj|INTEGER|脚本依附对象的`CK_ID`|
+|name|TEXT|脚本依附对象的名字|
+|index|INTEGER|脚本在依附对象的排序序号|
+|behavior|INTEGER|真正的脚本`CKBehavior`的`CK_ID`|
 
 ## data.db 格式
 
@@ -228,6 +228,48 @@ data.db导出的是当前文档内的除脚本外的一些基本类型的CKObjec
 - objBody：Header和Body，定义了一个类似于Array的表格，Array就按Array的格式存储，而其他物件，则将属性作为表头，然后本身作为表内的唯一一行数据记录
 - objParam：Body部分存储了对应值的字符串代替表示形式（用于良好的可视化），而其准确的属性上的描述由此表存储，按照类似pData的方式存储。
 - msg：当前文档内定义的message标号与数值的对应
+
+### obj
+
+|字段|类型|含义|
+|:---|:---|:---|
+|thisObj|INTEGER||
+|name|TEXT||
+|type_classid|INTEGER||
+|type_guid|TEXT||
+|type_name|TEXT||
+|rows|INTEGER||
+|columns|INTEGER||
+
+### objHeader
+
+|字段|类型|含义|
+|:---|:---|:---|
+|index|INTEGER||
+|name|TEXT||
+|type|INTEGER||
+|param_type|TEXT||
+|param_type_guid|TEXT||
+|belong_to|INTEGER||
+
+### objBody
+
+|字段|类型|含义|
+|:---|:---|:---|
+|row|INTEGER||
+|column|INTEGER||
+|showcase|TEXT||
+|inner_object|INTEGER||
+|inner_param|INTEGER||
+|belong_to|INTEGER||
+
+### objParam
+
+|字段|类型|含义|
+|:---|:---|:---|
+|field|TEXT||
+|data|TEXT||
+|belong_to|INTEGER||
 
 ### msg
 
