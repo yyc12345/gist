@@ -13,13 +13,13 @@ subplot({{ subplot.rows }}, {{ subplot.cols }}, {{ loop.index }});
 {% endif %}
 
 plot(x{{ loop.index }},y{{ loop.index }},'k');
+grid on;
+xlabel('{{ pair.x_label }}');
+ylabel('{{ pair.y_label }}');
+title('{{ pair.title }}');
 
 {% if not subplot.use_subplot %}
 hold on;
 {% endif %}
 
-grid on;
-xlabel('{{ pair.x_label }}');
-ylabel('{{ pair.y_label }}');
-title('{{ pair.title }}');
 {% endfor %}

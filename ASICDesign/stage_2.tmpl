@@ -165,10 +165,10 @@ VIN4    4   0   PWL(0   0   78n    0       80n     5       158n    5   160n    0
 .meas TRAN Vimax MAX  v(1) FROM 140n TO 170n
 .meas TRAN Vimin MIN  v(1) FROM 140n TO 170n
 
-.meas TRAN Trise TRIG V(5) val='0.1*Vmax+Vmin' TD=140ns RISE=1
-+ TARG V(5) val='0.9*Vmax' RISE=1
-.meas TRAN Tfall TRIG V(5) val='0.9*Vmax' TD=140ns FALL=1
-+ TARG V(5) val=='0.1*Vmax+Vmin' FALL=1
+.meas TRAN Trise TRIG V(5) val='0.1*(Vmax-Vmin)+Vmin' TD=140ns RISE=1
++ TARG V(5) val='0.9*(Vmax-Vmin)+Vmin' RISE=1
+.meas TRAN Tfall TRIG V(5) val='0.9*(Vmax-Vmin)+Vmin' TD=140ns FALL=1
++ TARG V(5) val=='0.1*(Vmax-Vmin)+Vmin' FALL=1
 *
 .meas TRAN TPHL TRIG v(1) VAL='(Vimax+Vimin)*0.5' TD=140ns  RISE=1
 + TARG v(5) VAL='(Vmax+Vmin)*0.5' FALL=1
