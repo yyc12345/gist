@@ -22,7 +22,10 @@ def get_measure_data(meas_path):
         len_v = int(len_v / 2)
         result_dict = {}
         for i in range(len_v):
-            result_dict[value[i]] = float(value[len_v + i])
+            if value[len_v + i] == 'failed':
+                result_dict[value[i]] = 0
+            else:
+                result_dict[value[i]] = float(value[len_v + i])
 
         return result_dict
 

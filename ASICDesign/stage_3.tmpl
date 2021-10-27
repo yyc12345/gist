@@ -162,7 +162,7 @@ MN{{ n + 1 }}     {{ (n - 1) * 2 + 4 }}   {{ n * 2 + 3 }}   {{ n * 2 + 4 }}   0 
 VDD     2   0   DC  5
 
 {% for n in range(input_count) %}
-VIN{{ n + 1 }}    {{ n * 2 + 3 }}   0   PWL(0   5   {{ 30 * (n + 1) - 20 - 2 }}n     5       {{ 30 * (n + 1) - 20 }}n     0       {{ 30 * (n + 1) - 10 - 2 }}n     0   {{ 30 * (n + 1) - 10 }}n     5    {{ 30 * input_count }}n    5   R)
+VIN{{ n + 1 }}    {{ n * 2 + 3 }}   0   PWL(0   5   {{ "%.2f" | format(30 * (n + 1) - 20 - 0.01) }}n     5       {{ 30 * (n + 1) - 20 }}n     0       {{ "%.2f" | format(30 * (n + 1) - 10 - 0.01) }}n     0   {{ 30 * (n + 1) - 10 }}n     5    {{ 30 * input_count }}n    5)
 {% endfor %}
 
 * Stimulus
@@ -170,32 +170,32 @@ VIN{{ n + 1 }}    {{ n * 2 + 3 }}   0   PWL(0   5   {{ 30 * (n + 1) - 20 - 2 }}n
 
 {% for n in range(input_count) %}
 
-.meas TRAN Vmax_{{ n + 1 }} MAX   v(1) FROM {{ n * 30 }}n TO {{ (n + 1) * 30 }}n
-.meas TRAN Vmin_{{ n + 1 }} MIN   v(1) FROM {{ n * 30 }}n TO {{ (n + 1) * 30 }}n
+.meas TRAN Vmax_{{ n + 1 }} MAX   v(1) FROM {{ n * 30 + 12 }}n TO {{ n * 30 + 18 }}n
+.meas TRAN Vmin_{{ n + 1 }} MIN   v(1) FROM {{ n * 30 + 2 }}n TO {{ n * 30 + 8 }}n
 
 {% endfor %}
 
 {% for n in range(input_count) %}
 
-.meas TRAN Trise_{{ n + 1 }} TRIG V(1) TD=4ns
-+ val='0.1*(Vmax_{{ n + 1 }}-Vmin_{{ n + 1 }})+Vmin_{{ n + 1 }}' RISE={{ n + 1 }}
+.meas TRAN Trise_{{ n + 1 }} TRIG V(1) TD={{ n * 30 + 8 }}ns
++ val='0.1*(Vmax_{{ n + 1 }}-Vmin_{{ n + 1 }})+Vmin_{{ n + 1 }}' RISE=1
 + TARG V(1) 
-+ val='0.9*(Vmax_{{ n + 1 }}-Vmin_{{ n + 1 }})+Vmin_{{ n + 1 }}' RISE={{ n + 1 }}
++ val='0.9*(Vmax_{{ n + 1 }}-Vmin_{{ n + 1 }})+Vmin_{{ n + 1 }}' RISE=1
 
-.meas TRAN Tfall_{{ n + 1 }} TRIG V(1) TD=4ns 
-+ val='0.9*(Vmax_{{ n + 1 }}-Vmin_{{ n + 1 }})+Vmin_{{ n + 1 }}' FALL={{ n + 1 }}
+.meas TRAN Tfall_{{ n + 1 }} TRIG V(1) TD={{ n * 30 + 18 }}ns 
++ val='0.9*(Vmax_{{ n + 1 }}-Vmin_{{ n + 1 }})+Vmin_{{ n + 1 }}' FALL=1
 + TARG V(1) 
-+ val='0.1*(Vmax_{{ n + 1 }}-Vmin_{{ n + 1 }})+Vmin_{{ n + 1 }}' FALL={{ n + 1 }}
++ val='0.1*(Vmax_{{ n + 1 }}-Vmin_{{ n + 1 }})+Vmin_{{ n + 1 }}' FALL=1
 
-.meas TRAN TPHL_{{ n + 1 }} TRIG v({{ n * 2 + 3 }}) TD=4ns 
+.meas TRAN TPHL_{{ n + 1 }} TRIG v({{ n * 2 + 3 }}) TD={{ n * 30 + 18 }}ns 
 + VAL='5*0.5' RISE=1
 + TARG v(1) 
-+ VAL='(Vmax_{{ n + 1 }}+Vmin_{{ n + 1 }})*0.5' FALL={{ n + 1 }}
++ VAL='(Vmax_{{ n + 1 }}+Vmin_{{ n + 1 }})*0.5' FALL=1
 
-.meas TRAN TPLH_{{ n + 1 }} TRIG v({{ n * 2 + 3 }}) TD=4ns 
+.meas TRAN TPLH_{{ n + 1 }} TRIG v({{ n * 2 + 3 }}) TD={{ n * 30 + 8 }}ns
 + VAL='5*0.5' FALL=1
 + TARG v(1) 
-+ VAL='(Vmax_{{ n + 1 }}+Vmin_{{ n + 1 }})*0.5' RISE={{ n + 1 }}
++ VAL='(Vmax_{{ n + 1 }}+Vmin_{{ n + 1 }})*0.5' RISE=1
 
 .meas TRAN Tmid_{{ n + 1 }} PARAM='(TPHL_{{ n + 1 }}+TPLH_{{ n + 1 }})*0.5'
 
