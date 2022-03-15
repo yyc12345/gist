@@ -5,10 +5,10 @@ function freqScopeList = selffft(timeScopeList, M)
   % construct butterfly struct
   LH=N/2;
   J=N/2;
-  for I=2:1:N-1
+  for I=1:1:N-2
     if I < J
-      temp=freqScopeList(I);
-      freqScopeList(I)=freqScopeList(J + 1);
+      temp=freqScopeList(I + 1);
+      freqScopeList(I + 1)=freqScopeList(J + 1);
       freqScopeList(J + 1)=temp;
     end
     
