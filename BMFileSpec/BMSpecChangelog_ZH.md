@@ -11,15 +11,22 @@
 
 ### v1.3
 
-Todo
+* 在`object.bm`新增字段`GROUP_LIST`表示物体的归组信息。
 
 ### v1.2
 
-Todo
+* 将zip压缩文件的后缀名从`bm`改为`bmx`。由 @BLumia 建议。
 
 ### v1.1
 
-Todo
+* 进一步详细规定字符串的标准写入读取方法。
+* 重新设定了bool的写入读取方法。
+* 在`object.bm`新增字段`IS_FORCED_NO_COMPONENT`，`IS_HIDDEN`。
+* 在`material.bm`重命名字段
+  - `KA` -> `AMBIENT`
+  - `KD` -> `DIFFUSE`
+  - `KS` -> `SPECULAR`
+* 在`material.bm`新增字段`SPECULAR_POWER`并详细注解字段含义及数值范围。
 
 ### v1.0
 
