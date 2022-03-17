@@ -87,7 +87,6 @@ BM文件，全称Ballance Map文件，一种专门用于在Virtools和其他3D�
 |助记符|类型|
 |:---|:---|
 |IS_COMPONENT|bool|
-|IS_FORCED_NO_COMPONENT|bool|
 |IS_HIDDEN|bool|
 |WORLD_MATRIX|float\[4\]\[4\]|
 |GROUP_LIST|-|
@@ -239,7 +238,7 @@ EMISSIVE表示材质的自发光色（emissive color），其中的数据依次�
 
 ### MAP_KD
 
-如果USE_TEXTURE为否，此项将被忽略，如果为是，此项为一个从0起始的，指向TEXTURE块中对应的贴图
+如果USE_TEXTURE为否，此数值将被忽略（忽略并不意味着可以不用写入，只是代表此数值不被使用）。如果为是，此项为一个从0起始的，指向TEXTURE块中对应的贴图
 
 ## texture.bm
 
