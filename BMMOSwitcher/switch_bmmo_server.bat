@@ -11,7 +11,7 @@ set "dest=ModLoader\Config\BallanceMMOClient.cfg"
 if "%srv%"=="1" (
 set "orig=BMMOCfgs\CN1.cfg"
 ) else if "%srv%"=="2" (
-set orig=BMMOCfgs\CN2.cfg"
+set "orig=BMMOCfgs\CN2.cfg"
 ) else if "%srv%"=="3" (
 set "orig=BMMOCfgs\DC.cfg"
 ) else (
