@@ -8,6 +8,7 @@
   - 此字段因为Ballance中的机关替换功能而引入。考虑到BMX已经有相应字段记录是否是COMPONENT，并且此字段与不同工具链的命名规则高度相关，因此删除此项。
   - 命名规则是各个导入导出工具各自进行实现的，不应由BMX文件本身负责。
   - 对于YYC工具链标准，保留所谓的NoComponentGroup。在导入的时候对COMPONENT为TRUE的物体进行命名分析，如果其命名不符合任何一种通用机关，则将其视为FORCED_COMPONENT，并将其置于相关组中。导出时则直接根据NoConponentGroup组中是否存在来进行判断。
+* 在`material.bm`新增4个字段：`ALPHA_TEST`，`ALPHA_BLEND`，`Z_BUFFER`，`TWO_SIDED`用于描述更多专用于Ballance的材质特性。
 
 ### v1.3
 

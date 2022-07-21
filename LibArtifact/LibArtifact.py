@@ -75,6 +75,18 @@ class ArtifactTypes:
     OceanHuedClam = ArtifactType(
         19, "Ocean-Hued Clam"
     )
+    VermillionHereafter = ArtifactType(
+        20, "Vermillion Hereafter"
+    )
+    EchoesOfAnOffering = ArtifactType(
+        21, "Echoes of an Offering"
+    )
+    MemoriesOfTheDeepForest = ArtifactType(
+        22, "Memories of the Deep Forest"
+    )
+    OrnamentalGoldDream = ArtifactType(
+        23, "Ornamental Gold Dream"
+    )
 
 class ArtifactPiece:
     def __init__(self, id: int, name: str):
@@ -376,6 +388,9 @@ class Domains:
     RidgeWatch = Domain(6, "Ridge Watch", (ArtifactTypes.TenacityOfTheMillelith, ArtifactTypes.PaleFlame))
     MomijiDyedCourt = Domain(7, "Momiji-Dyed Court", (ArtifactTypes.ShimenawasReminiscence, ArtifactTypes.EmblemOfSeveredFate))
     SlumberingCourt = Domain(8, "Slumbering Court", (ArtifactTypes.HuskOfOpulentDreams, ArtifactTypes.OceanHuedClam))
+    TheLostValley = Domain(9, "The Lost Valley", (ArtifactTypes.VermillionHereafter, ArtifactTypes.EchoesOfAnOffering))
+    UnknowSumeruDungeon = Domain(10, "Unknow Sumeru Dungeon", (ArtifactTypes.MemoriesOfTheDeepForest, ArtifactTypes.OrnamentalGoldDream))
+
 
     allDomains = (
         MidsummerCourtyard,
@@ -386,7 +401,9 @@ class Domains:
         PeakOfVindagnyr,
         RidgeWatch,
         MomijiDyedCourt,
-        SlumberingCourt
+        SlumberingCourt,
+        TheLostValley,
+        UnknowSumeruDungeon
     )
 
     @staticmethod

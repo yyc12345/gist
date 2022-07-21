@@ -214,6 +214,10 @@ USE_MATERIAL标识当前面是否使用材质，如果为是，MATERIAL_INDEX为
 |SPECULAR|float\[3\]|
 |EMISSIVE|float\[3\]|
 |SPECULAR_POWER|float|
+|ALPHA_TEST|bool|
+|ALPHA_BLEND|bool|
+|Z_BUFFER|bool|
+|TWO_SIDED|bool|
 |USE_TEXTURE|bool|
 |MAP_KD|unsigned int32_t|
 
@@ -232,6 +236,20 @@ EMISSIVE表示材质的自发光色（emissive color），其中的数据依次�
 ### SPECULAR_POWER
 
 表示SPECULAR的强度，其含义对应Virtools中的Power滑条。
+
+### ALPHA_TEST，ALPHA_BLEND，Z_BUFFER
+
+三组布尔值用于确认透明渲染的参数，填入真表示启用，填入假表示禁用。此参数高度特化于Ballance的材质渲染，一些设定是被强制指定的。
+
+`ALPHA_TEST`与3个函数有关：`CKMaterial::EnableAlphaTest()`，`CKMaterial::SetAlphaFunc(VXCMP_GREATER)`，`CKMaterial::SetAlphaRef(1)`。后两者的参数固定，第一个函数根据`ALPHA_TEST`设定。
+
+`ALPHA_BLEND`也与3个函数有关：`CKMaterial::EnableAlphaBlend()`，`CKMaterial::SetSourceBlend(VXBLEND_SRCALPHA)`，`CKMaterial::SetDestBlend(VXBLEND_INVSRCALPHA)`。与`ALPHA_TEST`相似，后两者的参数固定，第一个函数根据`ALPHA_BLEND`设定。
+
+`Z_BUFFER`与2个函数有关：`CKMaterial::EnableZWrite()`，`CKMaterial::SetZFunc(VXCMP_LESSEQUAL)`。与`ALPHA_TEST`相似，后者参数固定，前者根据`Z_BUFFER`设定
+
+### TWO_SIDED
+
+指示该材质赋予的面是否需要双面渲染。对应于`CKMaterial::SetTwoSided()`。
 
 ### USE_TEXTURE
 
