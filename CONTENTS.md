@@ -21,6 +21,5 @@
 * GamepiaynmoMod：Gamepiaynmo的Mod的存储文件的说明文档，个人制作。目前只有TAS的录制文件格式。
 * LCRConnect：在3个元器件内，使用给定元器件数值列表快速找到目标数值元器件的最好拼接方式，支持电阻，电容，电感
 * NetworkKeepAlive：个人用的自动拨号器，一旦掉线自动重连，解决学校天天自动给我断网的问题。
-* SuperScriptMaterializer：本人的项目SuperScriptMaterializer的个人用的开发记录手册，记录了一些内容方便我在之后快速重拾这个工程。
 * VerlogCourseDesign：个人的Verlog课设，出租车计价器（好像是只能模拟不能综合的版本，新版本懒得传了）
 * VirtoolsNLP：一个可以解析和回写Virtools Dev的NLP语言包文件的脚本。
