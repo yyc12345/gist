@@ -1,0 +1,74 @@
+/* Global font and style */
+* {
+	font-family: Whitney, Roboto, "Open Sans", "Segoe UI", sans-serif;
+	word-wrap: break-word;
+	line-height: 1.6;
+}
+
+/* Limit image width to make sure it will not overflow the border*/
+img {
+    max-width: 100%;
+}
+
+/* Code block style */
+code {
+	margin: 0.2rem;
+	padding: 0.2rem;
+	border: brown solid 1px;
+	border-radius: 0.2rem;
+	background-color: #f5f5f5;
+}
+
+/* Give the max width for article body 
+to get better read experience on width screen device,
+such as PC.
+*/
+body {
+	padding: 24px 12px;
+	max-width: 700px;
+	margin: auto;
+}
+
+/* Add extra seperate line below h2. */
+h2 {
+	border-bottom: 1px solid black;
+}
+
+/* General table style */
+table, th, td {
+	border: 1px solid black;
+}
+th, td {
+	padding: 0.4em;
+	text-align: left;
+}
+
+/* Admonition styles*/
+div.admonition {
+	padding-left: 1rem;
+	padding-right: 1rem;
+	padding-bottom: 1rem;
+
+	border-radius: .1rem;
+	box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,.05),0 0 0.05rem rgba(0,0,0,.1);
+}
+p.admonition-title {
+	padding-bottom: 1rem;
+	padding-top: 1rem;
+
+	margin-left: -1rem;
+	margin-right: -1rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
+
+	font-weight: bold;
+}
+div.admonition.info > p.admonition-title {
+	background-color: #e5f8fb;
+}
+div.admonition.warning > p.admonition-title {
+	background-color: #fff4e5;
+}
+div.admonition.error > p.admonition-title {
+	background-color: #ffe7ec;
+}
