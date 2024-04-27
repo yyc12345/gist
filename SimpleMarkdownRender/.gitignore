@@ -1,0 +1,4 @@
+# Disable all test and generated content.
+*.md
+*.html
+*.pdf
