@@ -185,11 +185,11 @@ class MainWindow():
             self.__mExpected[i].set(str(parsed_int + exp_count[i]))
 
     def __btn_clear_exp(self) -> None:
-        for i in range(4):
+        for i in range(5):
             self.__mExpected[i].set(str(0))
 
     def __btn_clear_avail(self) -> None:
-        for i in range(4):
+        for i in range(5):
             self.__mAvailable[i].set(str(0))
 
     def __compute(self) -> None:
@@ -207,7 +207,7 @@ class MainWindow():
         except:
             # if fail to parse value
             # set error value and return to notice user
-            for i in range(4):
+            for i in range(5):
                 self.__mShortage[i].set('N/A')
             self.__mSummary.set('数值无效')
             return
@@ -216,7 +216,7 @@ class MainWindow():
         # we try craft higher material as many as possible
         # in the premise that we can compensate the order of lower material.
         crafted_counts: list[int] = list(available_counts)
-        for i in range(4):
+        for i in range(5 - 1):
             diff: int = crafted_counts[i] - expected_counts[i]
             if diff > 0:
                 crafted_count= diff // 3
@@ -225,7 +225,7 @@ class MainWindow():
 
         # show shortage and check whether have shortage
         has_shortage = False
-        for i in range(4):
+        for i in range(5):
             shortage_count: int = expected_counts[i] - crafted_counts[i]
             if shortage_count > 0:
                 has_shortage = True
