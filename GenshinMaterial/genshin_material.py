@@ -4,20 +4,30 @@ import tkinter.ttk
 import tkinter.font
 
 class ExpectedPreset(enum.Enum):
-    CharMobLv80 = '角色Lv 80大世界普怪素材'
-    CharMobLv90 = '角色Lv 90大世界普怪素材'
-    SkillMobLv6 = '角色技能Lv 6大世界普怪素材'
-    SkillMobLv8 = '角色技能Lv 8大世界普怪素材'
-    SkillMobLv9 = '角色技能Lv 9大世界普怪素材'
-    SkillMobLv10 = '角色技能Lv 10大世界普怪素材'
+    CharStoneLv80 = '角色Lv 80石头'
+    CharStoneLv90 = '角色Lv 90石头'
+    CharMobLv80 = '角色Lv 80大世界普通怪素材'
+    CharMobLv90 = '角色Lv 90大世界普通怪素材'
+    SkillMobLv6 = '角色技能Lv 6大世界普通怪素材'
+    SkillMobLv8 = '角色技能Lv 8大世界普通怪素材'
+    SkillMobLv9 = '角色技能Lv 9大世界普通怪素材'
+    SkillMobLv10 = '角色技能Lv 10大世界普通怪素材'
     SkillBookLv6 = '角色技能Lv 6天赋书'
     SkillBookLv8 = '角色技能Lv 8天赋书'
     SkillBookLv9 = '角色技能Lv 9天赋书'
     SkillBookLv10 = '角色技能Lv 10天赋书'
+    WeaponBookLv80 = '五星武器Lv 80武器书'
+    WeaponBookLv90 = '五星武器Lv 90武器书'
+    WeaponMobLv80 = '五星武器Lv 80大世界普通怪素材'
+    WeaponMobLv90 = '五星武器Lv 90大世界普通怪素材'
+    WeaponEliteMobLv80 = '五星武器Lv 80大世界精英怪素材'
+    WeaponEliteMobLv90 = '五星武器Lv 90大世界精英怪素材'
 EXPECTED_PRESET_LIST: list[str] = list(
     map(lambda x: x.value, ExpectedPreset)
 )
 EXPECTED_PRESET_DICT: dict[ExpectedPreset, tuple[int, int, int, int, int]] = {
+    ExpectedPreset.CharStoneLv80: (0, 1, 9, 9, 0),
+    ExpectedPreset.CharStoneLv90: (0, 1, 9, 9, 6),
     ExpectedPreset.CharMobLv80: (18, 30, 12, 0, 0),
     ExpectedPreset.CharMobLv90: (18, 30, 36, 0, 0),
     ExpectedPreset.SkillMobLv6: (6, 22, 0, 0, 0),
@@ -28,6 +38,12 @@ EXPECTED_PRESET_DICT: dict[ExpectedPreset, tuple[int, int, int, int, int]] = {
     ExpectedPreset.SkillBookLv8: (0, 3, 21, 10, 0),
     ExpectedPreset.SkillBookLv9: (0, 3, 21, 22, 0),
     ExpectedPreset.SkillBookLv10: (0, 3, 21, 38, 0),
+    ExpectedPreset.WeaponBookLv80: (0, 5, 14, 14, 0),
+    ExpectedPreset.WeaponBookLv90: (0, 5, 14, 14, 6),
+    ExpectedPreset.WeaponMobLv80: (15, 23, 9, 0, 0),
+    ExpectedPreset.WeaponMobLv90: (15, 23, 27, 0, 0),
+    ExpectedPreset.WeaponEliteMobLv80: (23, 27, 14, 0, 0),
+    ExpectedPreset.WeaponEliteMobLv90: (23, 27, 41, 0, 0),
 }
 
 IMG_FILENAME: tuple[str, str, str, str] = (
