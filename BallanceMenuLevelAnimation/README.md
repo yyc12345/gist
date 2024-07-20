@@ -1,4 +1,4 @@
-# README
+# Ballance Menu Level Stone Ball Animation
 
 This folder contains the animation data of Ballance MenuLevel stone ball.
 
