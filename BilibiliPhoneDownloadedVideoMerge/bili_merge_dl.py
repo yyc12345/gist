@@ -52,11 +52,8 @@ class VideoDescriptor():
                 self.__mWidth = data['page_data']['width']
                 self.__mHeight = data['page_data']['height']
                 # get video title used as final output file
-                title: str = data['title']
-                part_title: str = data['page_data']['part']
-                if title == part_title: self.__mTitle = title
-                else: self.__mTitle = f'{title} - {part_title}'
-                self.__mTitle = self.__mTitle.translate(VideoDescriptor.cTitleTransTable)
+                title: str = data['page_data']['part']
+                self.__mTitle = title.translate(VideoDescriptor.cTitleTransTable)
         except:
             return False
         
@@ -71,6 +68,7 @@ class VideoDescriptor():
         return True
 
     def is_valid(self) -> bool: return self.__mIsValid
+    def get_root(self) -> str: return self.__mRoot
     def get_danmaku_file(self) -> str: return self.__mDanmakuFile
     def get_height(self) -> int: return self.__mHeight
     def get_width(self) -> int: return self.__mWidth
@@ -78,7 +76,7 @@ class VideoDescriptor():
     def get_video_file(self) -> str: return self.__mVideoFile
     def get_audio_file(self) -> str: return self.__mAudioFile
 
-def enumerate_video(src_path: str) -> tuple[VideoDescriptor, ...]:
+def enumerate_video(src_path: str) -> tuple[str, ...]:
     # enumerate collection first
     # prepare container and regex for checking
     collection_data: list[str] = []
@@ -103,12 +101,29 @@ def enumerate_video(src_path: str) -> tuple[VideoDescriptor, ...]:
                 if not entry.is_dir(): continue
                 video_data.append(os.path.join(coll, entry.name))
 
-    # then create video descriptor from video directory
-    ret: list[VideoDescriptor] = []
+    return tuple(video_data)
+
+def generate_video_descriptor(video_data: tuple[str, ...]) -> tuple[VideoDescriptor, ...]:
+    # create video descriptor from video directory
+    video_desc: list[VideoDescriptor] = []
     for item in video_data:
-        ret.append(VideoDescriptor(item))
-    # filter invalid one and return
-    return tuple(filter(lambda x: x.is_valid(), ret))
+        video_desc.append(VideoDescriptor(item))
+    # filter result
+    filter_video_desc: tuple[VideoDescriptor, ...] = tuple(filter(lambda x: x.is_valid(), video_desc))
+
+    # output result
+    print('===== Found Videos Summary =====')
+    print(f'{len(video_desc)} videos found. {len(filter_video_desc)} videos after filter.')
+    print('Index\tValid\tPath\tTitle')
+    for idx, item in enumerate(video_desc):
+        if item.is_valid():
+            print(f'{idx}\tTrue\t{item.get_root()}\t{item.get_title()}')
+        else:
+            print(f'{idx}\tFalse\t{item.get_root()}')
+
+    # return 
+    return filter_video_desc
+
 
 cCmdPathTransTable: dict = str.maketrans({
     '"': '\\"',     # escape double quote
@@ -154,8 +169,10 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    # fetch video descriptor
-    video_desc: tuple[VideoDescriptor, ...] = enumerate_video(args.input)
+    # fetch video data
+    video_data: tuple[str, ...] = enumerate_video(args.input)
+    # generate video descriptor, filter them and output summary
+    video_desc: tuple[VideoDescriptor, ...] = generate_video_descriptor(video_data)
     # output result
     generate_ffmpeg_cmd(video_desc, args.output)
     generate_danmaku_cmd(video_desc, args.output)
