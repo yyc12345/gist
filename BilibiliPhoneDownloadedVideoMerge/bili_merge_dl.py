@@ -138,7 +138,7 @@ def generate_ffmpeg_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) 
         input_video: str = safe_cmd_path(desc.get_video_file())
         input_audio: str = safe_cmd_path(desc.get_audio_file())
         output_av: str = safe_cmd_path(os.path.join(dst_path, desc.get_title() + '.mp4'))
-        print(f'ffmpeg -i {input_audio} -i {input_video} -c:v copy -c:a copy {output_av}')
+        print(f'ffmpeg -loglevel warning -hide_banner -i {input_audio} -i {input_video} -c:v copy -c:a copy {output_av}')
 
 def generate_danmaku_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) -> None:
     print('===== Danmaku Commands =====')
