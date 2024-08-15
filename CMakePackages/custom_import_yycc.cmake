@@ -5,6 +5,7 @@ if (NOT DEFINED YYCC_PATH)
 endif()
 
 # Find YYCC library
+# It will produce YYCC::YYCCommonplace target for including and linking.
 find_package(YYCCommonplace REQUIRED
     HINTS ${YYCC_PATH} NO_DEFAULT_PATH
 )

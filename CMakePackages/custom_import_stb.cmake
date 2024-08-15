@@ -5,6 +5,8 @@ endif()
 
 # Add library
 add_library(stb-image INTERFACE IMPORTED)
+# Add alias for it
+add_library(stb::stb-image ALIAS stb-image)
 # Setup header files
 set_target_properties(stb-image PROPERTIES
 INTERFACE_INCLUDE_DIRECTORIES

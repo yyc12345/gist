@@ -8,7 +8,7 @@ if (WIN32)
     # 5. Execute `lib /DEF:sqlite3.def /OUT:sqlite3.lib /MACHINE:x86` (`x86` is the architecture of your SQLite3, you may change it according to your requirement).
     # 6. Now you have a generated LIB file for MSVC linking.
 
-    # Check variables# Check YYCC path variable
+    # Check SQLite path variable
     if (NOT DEFINED SQLITE_AMALGAMATION_PATH)
         message(FATAL_ERROR "You must set SQLITE_AMALGAMATION_PATH to the directory where the SQLite3 header file locate.")
     endif()
