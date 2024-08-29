@@ -80,7 +80,7 @@ def enumerate_video(src_path: str) -> tuple[str, ...]:
     # enumerate collection first
     # prepare container and regex for checking
     collection_data: list[str] = []
-    dir_name_pattern: re.Pattern = re.compile('^[0-9]+$')
+    dir_name_pattern: re.Pattern = re.compile('^[c_0-9]+$')
     # iterate source directory
     with os.scandir(src_path) as it:
         for entry in it:
