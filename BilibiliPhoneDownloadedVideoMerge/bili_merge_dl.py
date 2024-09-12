@@ -4,6 +4,43 @@ import argparse
 import re
 import typing
 
+class PartStorage:
+    __mRoot: str
+    __mPartStorage: list[str]
+
+    def __init__(self, storage_path: str):
+        self.__mRoot = storage_path
+        self.__mPartStorage = []
+
+    def get_path(self) -> str:
+        return self.__mRoot
+
+    def add_to_storage(self, new_part: str) -> None:
+        self.__mPartStorage.append(new_part)
+
+    def iterate_storage(self) -> typing.Iterator[str]:
+        return iter(self.__mPartStorage)
+
+    def is_single_part(self) -> bool:
+        return len(self.__mPartStorage) <= 1
+
+class VideoStorage():
+    __mRoot: str
+    __mVideoStorage: list[PartStorage]
+
+    def __init__(self, storage_path: str):
+        self.__mRoot = storage_path
+        self.__mVideoStorage = []
+
+    def get_path(self) -> str:
+        return self.__mRoot
+
+    def add_to_storage(self, new_video: PartStorage) -> None:
+        self.__mVideoStorage.append(new_video)
+
+    def iterate_storage(self) -> typing.Iterator[PartStorage]:
+        return iter(self.__mVideoStorage)
+
 class VideoDescriptor():
     
     cTitleTransTable: typing.ClassVar[dict] = str.maketrans({
@@ -12,6 +49,7 @@ class VideoDescriptor():
     })
 
     __mRoot: str
+    __mSinglePart: bool
     __mDanmakuFile: str
     __mEntryJsonFile: str
     __mDownloadQuality: int
@@ -22,11 +60,12 @@ class VideoDescriptor():
     __mAudioFile: str
     __mIsValid: bool
 
-    def __init__(self, video_path: str):
+    def __init__(self, video_path: str, is_single_part: bool):
         # set to invalid first
         self.__mIsValid = False
-        # set root directory
+        # set root directory and whether it is single part
         self.__mRoot = video_path
+        self.__mSinglePart = is_single_part
         # initialize each parts
         if not self.__init_danmaku_file(): return
         if not self.__init_entry_json_file(): return
@@ -51,9 +90,13 @@ class VideoDescriptor():
                 # get width and height for danmaku output
                 self.__mWidth = data['page_data']['width']
                 self.__mHeight = data['page_data']['height']
-                # get video title used as final output file
-                title: str = data['page_data']['part']
+                # get main title and part title respectively
+                # choose main title if it is single part, otherwise part title
+                title: str
+                if self.__mSinglePart: title = data['title']
+                else: title = data['page_data']['part']
                 self.__mTitle = title.translate(VideoDescriptor.cTitleTransTable)
+
         except:
             return False
         
@@ -76,10 +119,10 @@ class VideoDescriptor():
     def get_video_file(self) -> str: return self.__mVideoFile
     def get_audio_file(self) -> str: return self.__mAudioFile
 
-def enumerate_video(src_path: str) -> tuple[str, ...]:
+def enumerate_video(src_path: str) -> VideoStorage:
     # enumerate collection first
     # prepare container and regex for checking
-    collection_data: list[str] = []
+    video_storage: VideoStorage = VideoStorage(src_path)
     dir_name_pattern: re.Pattern = re.compile('^[c_0-9]+$')
     # iterate source directory
     with os.scandir(src_path) as it:
@@ -88,26 +131,25 @@ def enumerate_video(src_path: str) -> tuple[str, ...]:
             if not entry.is_dir(): continue
             if dir_name_pattern.match(entry.name) is None: continue
             # add it
-            collection_data.append(os.path.join(src_path, entry.name))
+            video_storage.add_to_storage(PartStorage(os.path.join(src_path, entry.name)))
 
     # then enumerate video
-    # prepare container
-    video_data: list[str] = []
     # iterate every collection's sub directory
-    for coll in collection_data:
-        with os.scandir(coll) as it:
+    for parts in video_storage.iterate_storage():
+        with os.scandir(parts.get_path()) as it:
             for entry in it:
                 # if it is dir, add into result
                 if not entry.is_dir(): continue
-                video_data.append(os.path.join(coll, entry.name))
+                parts.add_to_storage(os.path.join(parts.get_path(), entry.name))
 
-    return tuple(video_data)
+    return video_storage
 
-def generate_video_descriptor(video_data: tuple[str, ...]) -> tuple[VideoDescriptor, ...]:
+def generate_video_descriptor(video_data: VideoStorage) -> tuple[VideoDescriptor, ...]:
     # create video descriptor from video directory
     video_desc: list[VideoDescriptor] = []
-    for item in video_data:
-        video_desc.append(VideoDescriptor(item))
+    for vst in video_data.iterate_storage():
+        for pst in vst.iterate_storage():
+            video_desc.append(VideoDescriptor(pst, vst.is_single_part()))
     # filter result
     filter_video_desc: tuple[VideoDescriptor, ...] = tuple(filter(lambda x: x.is_valid(), video_desc))
 
@@ -170,7 +212,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # fetch video data
-    video_data: tuple[str, ...] = enumerate_video(args.input)
+    video_data: VideoStorage = enumerate_video(args.input)
     # generate video descriptor, filter them and output summary
     video_desc: tuple[VideoDescriptor, ...] = generate_video_descriptor(video_data)
     # output result
