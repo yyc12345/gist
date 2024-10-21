@@ -11,39 +11,25 @@ namespace YYCFFT {
 
 	namespace Utils {
 		
-		// NOTE: May be replaced by std::has_single_bit
+		template<typename _TyFloat>
+		inline constexpr _TyFloat tau_v = static_cast<_TyFloat>(2) * std::numbers::pi_v<_TyFloat>;
 
-		template<typename _TyIndex, size_t _N>
-		inline constexpr bool IsPow2() {
-			size_t N = _N;
-			while (!(N & 1u)) {
-				N >>= 1u;
-			}
-			return N == 1u;
-		}
-		
-		// NOTE: May be replaced by std::bit_floor
-
-		template<typename _TyIndex, size_t _N>
-		inline constexpr _TyIndex GetPow2Exponent() {
-			_TyIndex ret = 0u;
-			size_t N = _N;
-			while (N) {
-				N >>= 1u;
-				++ret;
-			}
-			return --ret;
-		}
+		// NOTE:
+		// We use std::has_single_bit() to check whether given number is an integral power of 2.
+		// And use (std::bit_width() - 1) to get the exponent of given number based on 2.
 
 		template<typename _TyIndex, typename _TyFloat, size_t _N>
-		struct ValidateArgs {
+		struct validate_args {
 		private:
 			static constexpr bool _IsUnsignedInt = std::is_unsigned_v<_TyIndex> && std::is_integral_v<_TyIndex>;
 			static constexpr bool _IsFloatPoint = std::is_floating_point_v<_TyFloat>;
-			static constexpr bool _IsLegalN = IsPow2<_TyIndex, _N>() && _N >= 2u;
+			static constexpr bool _IsLegalN = std::has_single_bit<_TyIndex>(static_cast<_TyIndex>(_N)) && _N >= static_cast<_TyIndex>(2);
 		public:
 			static constexpr bool value = _IsUnsignedInt && _IsFloatPoint && _IsLegalN;
 		};
+
+		template<typename _TyIndex, typename _TyFloat, size_t _N>
+		inline constexpr bool validate_args_v = validate_args<_TyIndex, _TyFloat, _N>::value;
 
 	}
 
@@ -51,10 +37,10 @@ namespace YYCFFT {
 		HanningWindow
 	};
 
-	template<typename _TyIndex, typename _TyFloat, size_t _N, std::enable_if_t<Utils::ValidateArgs<_TyIndex, _TyFloat, _N>::value, int> = 0>
+	template<typename _TyIndex, typename _TyFloat, size_t _N, std::enable_if_t<Utils::validate_args_v<_TyIndex, _TyFloat, _N>, int> = 0>
 	class Window {
 	private:
-		constexpr static _TyIndex N = _N;
+		static constexpr _TyIndex N = _N;
 
 	public:
 		Window(WindowType win_type) : m_WindowType(win_type), m_WindowData(nullptr) {
@@ -66,7 +52,7 @@ namespace YYCFFT {
 				case YYCFFT::WindowType::HanningWindow:
 					for (_TyIndex i = 0u; i < N; ++i) {
 						m_WindowData[i] = static_cast<_TyFloat>(0.5) *
-							(static_cast<_TyFloat>(1.0) - std::cos(static_cast<_TyFloat>(2.0) * std::numbers::pi_v<_TyFloat> *static_cast<_TyFloat>(i) / static_cast<_TyFloat>(N - 1u)));
+							(static_cast<_TyFloat>(1) - std::cos(Utils::tau_v<_TyFloat> * static_cast<_TyFloat>(i) / static_cast<_TyFloat>(N - static_cast<_TyIndex>(1))));
 					}
 					break;
 				default:
@@ -78,33 +64,45 @@ namespace YYCFFT {
 		WindowType m_WindowType;
 		std::unique_ptr<_TyFloat[]> m_WindowData;
 	public:
+		/**
+		 * @brief Apply window function to given data sequence.
+		 * @param[in,out] data 
+		 * The float-point data sequence for applying window function.
+		 * The length of this sequence must be N.
+		*/
 		void ApplyWindow(_TyFloat* data) const {
 			if (data == nullptr) [[unlikely]] {
 				throw std::invalid_argument("nullptr data is not allowed for applying window.");
 			}
-			for (_TyIndex i = 0u; i < N; ++i) {
+			for (_TyIndex i = static_cast<_TyIndex>(0); i < N; ++i) {
 				data[i] *= m_WindowData[i];
 			}
 		}
+		/**
+		 * @brief Get underlying window function data for custom applying.
+		 * @return 
+		 * The pointer to the start address of underlying window function data sequence.
+		 * The length of this sequence is N.
+		*/
 		const _TyFloat* GetWindowData() const {
 			return m_WindowData.get();
 		}
 	};
 
-	template<typename _TyIndex, typename _TyFloat, size_t _N, std::enable_if_t<Utils::ValidateArgs<_TyIndex, _TyFloat, _N>::value, int> = 0>
+	template<typename _TyIndex, typename _TyFloat, size_t _N, std::enable_if_t<Utils::validate_args_v<_TyIndex, _TyFloat, _N>, int> = 0>
 	class FFT {
 	private:
 		using _TyComplex = std::complex<_TyFloat>;
-		constexpr static _TyIndex N = _N;
-		constexpr static _TyIndex M = Utils::GetPow2Exponent<_TyIndex, _N>();
-		constexpr static _TyIndex c_HalfPoint = _N >> 1u;
+		static constexpr _TyIndex N = static_cast<_TyIndex>(_N);
+		static constexpr _TyIndex M = static_cast<_TyIndex>(std::bit_width<_TyIndex>(N) - 1);
+		static constexpr _TyIndex c_HalfPoint = _N >> static_cast<_TyIndex>(1);
 
 	public:
-		FFT() : m_WNPCache(nullptr), m_EasyComputeCache(N, _TyComplex()) {
+		FFT() : m_WNPCache(nullptr), m_EasyComputeCache(N) {
 			// Generate WNP cache
 			m_WNPCache = std::make_unique<_TyComplex[]>(N);
-			for (_TyIndex P = 0u; P < N; ++P) {
-				_TyFloat angle = static_cast<_TyFloat>(2) * std::numbers::pi_v<_TyFloat> * static_cast<_TyFloat>(P) / static_cast<_TyFloat>(N);
+			for (_TyIndex P = static_cast<_TyIndex>(0); P < N; ++P) {
+				_TyFloat angle = Utils::tau_v<_TyFloat> * static_cast<_TyFloat>(P) / static_cast<_TyFloat>(N);
 				// e^(-jx) = cosx - j sinx
 				m_WNPCache[P] = _TyComplex(
 					std::cos(angle),
@@ -118,6 +116,16 @@ namespace YYCFFT {
 	private:
 		std::unique_ptr<_TyComplex[]> m_WNPCache;
 	public:
+		/**
+		 * @brief Compute FFT for given complex sequence.
+		 * @details
+		 * This is FFT core compute function but not suit for common user
+		 * because it order that you have enough FFT knowledge to understand what is input data and what is output data.
+		 * For convenient use, see also EasyCompute().
+		 * @param[in,out] data 
+		 * The complex sequence for computing.
+		 * The length of this sequence must be N.
+		*/
 		void Compute(_TyComplex* data) const {
 			if (data == nullptr) [[unlikely]] {
 				throw std::invalid_argument("nullptr data is not allowed for FFT computing.");
@@ -127,26 +135,26 @@ namespace YYCFFT {
 			LH = J = c_HalfPoint;
 
 			// Construct butterfly structure
-			for (_TyIndex I = 1u; I <= N - 2u; ++I) {
+			for (_TyIndex I = static_cast<_TyIndex>(1); I <= N - static_cast<_TyIndex>(2); ++I) {
 				if (I < J) std::swap(data[I], data[J]);
 
 				K = LH;
 				while (J >= K) {
 					J -= K;
-					K >>= 1u;
+					K >>= static_cast<_TyIndex>(1);
 				}
 				J += K;
 			}
 
 			// Calculate butterfly
 			_TyComplex temp, temp2;
-			for (_TyIndex L = 1u; L <= M; ++L) {
-				B = static_cast<_TyIndex>(1u) << (L - 1u);
-				for (J = 0u; J <= B - 1u; ++J) {
-					P = J * (static_cast<_TyIndex>(1u) << (M - L));
+			for (_TyIndex L = static_cast<_TyIndex>(1); L <= M; ++L) {
+				B = static_cast<_TyIndex>(1u) << (L - static_cast<_TyIndex>(1));
+				for (J = static_cast<_TyIndex>(0); J <= B - static_cast<_TyIndex>(1); ++J) {
+					P = J * (static_cast<_TyIndex>(1) << (M - L));
 
 					// Use pre-computed cache instead of real-time computing
-					for (_TyIndex KK = J; KK <= N - 1u; KK += (static_cast<_TyIndex>(1u) << L)) {
+					for (_TyIndex KK = J; KK <= N - static_cast<_TyIndex>(1); KK += (static_cast<_TyIndex>(1) << L)) {
 						temp2 = (data[KK + B] * this->m_WNPCache[P]);
 						temp = temp2 + data[KK];
 						data[KK + B] = data[KK] - temp2;
@@ -170,18 +178,23 @@ namespace YYCFFT {
 		*/
 		_TyFloat GetMaxFreq(_TyFloat sample_rate) {
 			// Following sample priniciple
-			return sample_rate / static_cast<_TyFloat>(2.0);
+			return sample_rate / static_cast<_TyFloat>(2);
 		}
 		/**
-		 * @brief
-		 * The convenient FFT compute function.
-		 * For 
+		 * @brief Compute FFT for given time scope data.
+		 * @details
+		 * This is convenient FFT compute function, comparing with Compute().
+		 * This function accepts time scope data and output frequency scope data automatically.
+		 * Additionally, it order a window function instance to apply to time scope data before computing.
+		 * @warnings
+		 * This function is NOT thread-safe.
+		 * Please do NOT call this function in different thread for one instance.
 		 * @param[in] time_scope
 		 * The length of this data must be N.
 		 * For the time order of data, the first data should be the oldest data and the last data should be the newest data.
 		 * @param[out] freq_scope
 		 * The length of this data must be N / 2.
-		 * The first data is 0Hz and the frequency of last data is decided by sample rate which can be computed by GetMaxFreq function in this class.
+		 * The first data is 0Hz and the frequency of last data is decided by sample rate which can be computed by GetMaxFreq() function in this class.
 		 * @param[in] window
 		 * The window instance applied to data.
 		*/
@@ -197,7 +210,7 @@ namespace YYCFFT {
 				m_EasyComputeCache.begin(),
 				m_EasyComputeCache.end(),
 				[data = &(time_scope[N]), win_data = window.GetWindowData()]() mutable -> _TyComplex {
-					return _TyComplex(*(data--) * *(win_data++), static_cast<_TyFloat>(0));
+					return _TyComplex(*(data--) * *(win_data++));
 				}
 			);
 
@@ -205,8 +218,8 @@ namespace YYCFFT {
 			this->Compute(m_EasyComputeCache.data());
 
 			// Compute amplitude
-			for (_TyIndex i = 0u; i < c_HalfPoint; ++i) {
-				freq_scope[i] = static_cast<_TyFloat>(10.0) * std::log10(std::abs(m_EasyComputeCache[i + c_HalfPoint]));
+			for (_TyIndex i = static_cast<_TyIndex>(0); i < c_HalfPoint; ++i) {
+				freq_scope[i] = static_cast<_TyFloat>(10) * std::log10(std::abs(m_EasyComputeCache[i + c_HalfPoint]));
 			}
 		}
 	};
