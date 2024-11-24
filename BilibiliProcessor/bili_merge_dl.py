@@ -162,6 +162,7 @@ def generate_video_descriptor(video_data: VideoStorage) -> tuple[VideoDescriptor
             print(f'{idx}\tTrue\t{item.get_root()}\t{item.get_title()}')
         else:
             print(f'{idx}\tFalse\t{item.get_root()}')
+    print('')
 
     # return 
     return filter_video_desc
@@ -181,6 +182,23 @@ def generate_ffmpeg_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) 
         input_audio: str = safe_cmd_path(desc.get_audio_file())
         output_av: str = safe_cmd_path(os.path.join(dst_path, desc.get_title() + '.mp4'))
         print(f'ffmpeg -loglevel warning -hide_banner -i {input_audio} -i {input_video} -c:v copy -c:a copy {output_av}')
+    print('')
+
+def generate_audio_only_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) -> None:
+    print('===== Audio-only COPY Commands =====')
+    for desc in video_desc:
+        input_audio: str = safe_cmd_path(desc.get_audio_file())
+        output_a: str = safe_cmd_path(os.path.join(dst_path, desc.get_title() + '.aac'))
+        print(f'COPY /Y {input_audio} {output_a}')
+    print('')
+
+def generate_subtitle_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) -> None:
+    print('===== Subtitle Commands =====')
+    for desc in video_desc:
+        input_json: str = safe_cmd_path(desc.get_title() + '.json')
+        output_srt: str = safe_cmd_path(os.path.join(dst_path, desc.get_title() + '.srt'))
+        print(f'py bili_srt_conv.py -i {input_json} -o {output_srt}')
+    print('')
 
 def generate_danmaku_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) -> None:
     print('===== Danmaku Commands =====')
@@ -191,6 +209,7 @@ def generate_danmaku_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str)
         input_xml: str = safe_cmd_path(desc.get_danmaku_file())
         output_ass: str = safe_cmd_path(os.path.join(dst_path, desc.get_title() + '.ass'))
         print(f'DanmakuFactory -o ass {output_ass} -i xml {input_xml} -x {x} -y {y} --fontsize 38 --fontname "Source Han Sans"')
+    print('')
 
 if __name__ == '__main__':
     # Prepare arg parser and do parse
@@ -217,4 +236,6 @@ if __name__ == '__main__':
     video_desc: tuple[VideoDescriptor, ...] = generate_video_descriptor(video_data)
     # output result
     generate_ffmpeg_cmd(video_desc, args.output)
+    generate_audio_only_cmd(video_desc, args.output)
+    generate_subtitle_cmd(video_desc, args.output)
     generate_danmaku_cmd(video_desc, args.output)

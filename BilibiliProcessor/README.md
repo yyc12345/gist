@@ -1,0 +1,3 @@
+# Bilibili Processor
+
+本文件夹存储和Bilibili有关的脚本，包括Android端缓存内容解析，以及Bilibili特有Subtitle转SRT字幕用脚本。
