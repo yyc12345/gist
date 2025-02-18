@@ -84,20 +84,27 @@ class VideoDescriptor():
         # try to read json data
         try:
             with open(self.__mEntryJsonFile, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+                data: dict[str, typing.Any] = json.load(f)
                 # get quality for locating video and audio file
                 self.__mDownloadQuality = data['video_quality']
+
+                # get part data
+                part_data = self.__get_part_data(data)
+
                 # get width and height for danmaku output
-                self.__mWidth = data['page_data']['width']
-                self.__mHeight = data['page_data']['height']
+                self.__mWidth = part_data['width']
+                self.__mHeight = part_data['height']
+
                 # get main title and part title respectively
                 # choose main title if it is single part, otherwise part title
                 title: str
                 if self.__mSinglePart: title = data['title']
-                else: title = data['page_data']['part']
+                else: title = self.__get_part_title(part_data)
                 self.__mTitle = title.translate(VideoDescriptor.cTitleTransTable)
 
         except:
+        # except Exception as ex:
+        #     print(ex.__repr__())
             return False
         
         return True
@@ -109,6 +116,35 @@ class VideoDescriptor():
         if not os.path.isfile(self.__mVideoFile): return False
         if not os.path.isfile(self.__mAudioFile): return False
         return True
+
+    def __get_part_data(self, d: dict[str, typing.Any]) -> dict[str, typing.Any]:
+        # Normal video and bangumi have different part data field name.
+        # We need process them respectively.
+
+        # Preapre return value
+        ret: dict[str, typing.Any] | None
+        # Test normal video key
+        ret = d.get('page_data', None)
+        if ret is not None: return ret
+        # Test bangumi key
+        ret = d.get('ep', None)
+        if ret is not None: return ret
+        # Error
+        raise Exception("Can not find video part data.")
+
+    def __get_part_title(self, d: dict[str, typing.Any]) -> str:
+        # Same like part data, we need find it respectively
+
+        # Prepare return value
+        ret: str | None
+        # Test normal video
+        ret = d.get('part', None)
+        if ret is not None: return ret
+        # Test bangumi key
+        ret = d.get('index_title', None)
+        if ret is not None: return ret
+        # Error
+        raise Exception("Can not find video part title.")
 
     def is_valid(self) -> bool: return self.__mIsValid
     def get_root(self) -> str: return self.__mRoot
@@ -123,7 +159,7 @@ def enumerate_video(src_path: str) -> VideoStorage:
     # enumerate collection first
     # prepare container and regex for checking
     video_storage: VideoStorage = VideoStorage(src_path)
-    dir_name_pattern: re.Pattern = re.compile('^[c_0-9]+$')
+    dir_name_pattern: re.Pattern = re.compile('^[sc_0-9]+$')
     # iterate source directory
     with os.scandir(src_path) as it:
         for entry in it:
@@ -184,12 +220,20 @@ def generate_ffmpeg_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) 
         print(f'ffmpeg -loglevel warning -hide_banner -i {input_audio} -i {input_video} -c:v copy -c:a copy {output_av}')
     print('')
 
-def generate_audio_only_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) -> None:
-    print('===== Audio-only COPY Commands =====')
+def generate_audio_only_win_copy(video_desc: tuple[VideoDescriptor, ...], dst_path: str) -> None:
+    print('===== Audio-only Windows COPY Commands =====')
     for desc in video_desc:
         input_audio: str = safe_cmd_path(desc.get_audio_file())
         output_a: str = safe_cmd_path(os.path.join(dst_path, desc.get_title() + '.aac'))
         print(f'COPY /Y {input_audio} {output_a}')
+    print('')
+
+def generate_audio_only_linux_cp(video_desc: tuple[VideoDescriptor, ...], dst_path: str) -> None:
+    print('===== Audio-only Linux CP Commands =====')
+    for desc in video_desc:
+        input_audio: str = safe_cmd_path(desc.get_audio_file())
+        output_a: str = safe_cmd_path(os.path.join(dst_path, desc.get_title() + '.aac'))
+        print(f'cp -f {input_audio} {output_a}')
     print('')
 
 def generate_subtitle_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) -> None:
@@ -236,6 +280,7 @@ if __name__ == '__main__':
     video_desc: tuple[VideoDescriptor, ...] = generate_video_descriptor(video_data)
     # output result
     generate_ffmpeg_cmd(video_desc, args.output)
-    generate_audio_only_cmd(video_desc, args.output)
+    generate_audio_only_win_copy(video_desc, args.output)
+    generate_audio_only_linux_cp(video_desc, args.output)
     generate_subtitle_cmd(video_desc, args.output)
     generate_danmaku_cmd(video_desc, args.output)
