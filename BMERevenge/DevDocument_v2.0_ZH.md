@@ -85,21 +85,21 @@ Blender coordinate system
                 "type": "float",
                 "title": "Length",
                 "desc": "The size of block.",
-                "default": 5.0
+                "default": "5.0"
             },
             {
                 "field": "count_",
                 "type": "int",
                 "title": "Count",
                 "desc": "Some count of this block.",
-                "default": 0
+                "default": "0"
             },
             {
                 "field": "has_side_",
                 "type": "bool",
                 "title": "Has Side",
                 "desc": "Whether has xxx side.",
-                "default": true
+                "default": "True"
             }
         ]
     },
