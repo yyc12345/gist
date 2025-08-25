@@ -1,7 +1,7 @@
 # 开发帮助
 
 BMERevenge是内置于BallanceBlenderPlugin内的一套路面生成器（原本之前打算做新的2D编辑器，后来放弃了，改为直接Blender内生成）。  
-此文档是BMERevenge开发中遵守的一些规定。此文档是第二版BMERevenge所用的标准，对应于BallanceBlenderPlugin 4.0及后续版本。
+此文档是BMERevenge开发中遵守的一些规定。此文档是BMERevenge v2.1版标准，对应于BallanceBlenderPlugin 4.3及后续版本。
 
 ## 坐标系
 
@@ -70,13 +70,14 @@ Blender coordinate system
 ## 原型
 
 原型（Prototype）描述了一个组件是如何被顶点和面片组合而成的，是BMERevenge中的基础构建单元。BMERevenge中的所有结构都是由一个个原型组合而成的。  
-原型使用JSON文本进行描述。下面是一个原型的描述的示例：
+原型使用JSON5文本进行描述（这意味着你可以在传统JSON之上使用注释来更好地解释你的原型，以方便他人或自己以后阅读），下面是一个原型的描述的示例：
 
 ```json
 {
     "identifier": "test",
     "showcase": {
         "title": "Test Block",
+        "category": "Example",
         "icon": "Flat",
         "type": "floor",
         "cfgs": [
@@ -262,7 +263,7 @@ BMERevenge使用可编程字段来使得模型可以按照用户需要的大小�
 ### 展示与模板
 
 展示（`showcase`字段）表示了当前原型显示在插件创建菜单里所需要的数据。  
-其中标题（`title`字段）表示了其显示的名称。图标（`icon`字段）决定了图标。这些图标被存储在专用的图标文件夹内。图标字段的值为对应图标的文件名部分（去除后缀名）。
+其中标题（`title`字段）表示了其显示的名称。分类（`category`字段）表示了该原型在展示时的分类，同种分类的原型会被聚合在一起。图标（`icon`字段）决定了图标。这些图标被存储在专用的图标文件夹内。图标字段的值为对应图标的文件名部分（去除后缀名）。
 
 类型（`type`字段）是一个字符串，决定了当前原型最终生成的是何种类型的Ballance机关。类型决定了生成的物体将会以何种格式命名，以及被归入哪些Virtools组中。类型字段仅支持以下内容：
 
