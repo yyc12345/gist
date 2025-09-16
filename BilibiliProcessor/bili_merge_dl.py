@@ -50,7 +50,7 @@ class VideoDescriptor():
 
     __mRoot: str
     __mSinglePart: bool
-    __mDanmakuFile: str
+    __mDanmakuFile: str | None
     __mEntryJsonFile: str
     __mDownloadQuality: int
     __mHeight: int
@@ -67,15 +67,17 @@ class VideoDescriptor():
         self.__mRoot = video_path
         self.__mSinglePart = is_single_part
         # initialize each parts
-        if not self.__init_danmaku_file(): return
+        self.__init_danmaku_file()
         if not self.__init_entry_json_file(): return
         if not self.__init_video_audio_files(): return
         # set to valid
         self.__mIsValid = True
 
-    def __init_danmaku_file(self) -> bool:
+    def __init_danmaku_file(self) -> None:
+        # YYC MARK: Danmaku is optional if there is no danmaku.
         self.__mDanmakuFile = os.path.join(self.__mRoot, 'danmaku.xml')
-        return os.path.isfile(self.__mDanmakuFile)
+        if not os.path.isfile(self.__mDanmakuFile):
+            self.__mDanmakuFile = None
 
     def __init_entry_json_file(self) -> bool:
         # init path first
@@ -102,10 +104,11 @@ class VideoDescriptor():
                 else: title = self.__get_part_title(part_data)
                 self.__mTitle = title.translate(VideoDescriptor.cTitleTransTable)
 
+        # YYC MARK: Comment for developer checking exception
         except:
+            return False
         # except Exception as ex:
         #     print(ex.__repr__())
-            return False
         
         return True
 
@@ -148,7 +151,10 @@ class VideoDescriptor():
 
     def is_valid(self) -> bool: return self.__mIsValid
     def get_root(self) -> str: return self.__mRoot
-    def get_danmaku_file(self) -> str: return self.__mDanmakuFile
+    def has_danmaku_file(self) -> bool: return self.__mDanmakuFile is not None
+    def get_danmaku_file(self) -> str:
+        if self.__mDanmakuFile is None: raise RuntimeError("there is no danmaku file")
+        else: return self.__mDanmakuFile
     def get_height(self) -> int: return self.__mHeight
     def get_width(self) -> int: return self.__mWidth
     def get_title(self) -> str: return self.__mTitle
@@ -247,7 +253,7 @@ def generate_subtitle_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str
 def generate_danmaku_cmd(video_desc: tuple[VideoDescriptor, ...], dst_path: str) -> None:
     print('===== Danmaku Commands =====')
     print('See https://github.com/hihkm/DanmakuFactory for more infomation.')
-    for desc in video_desc:
+    for desc in filter(lambda i: i.has_danmaku_file(), video_desc):
         x: str = str(desc.get_width())
         y: str = str(desc.get_height())
         input_xml: str = safe_cmd_path(desc.get_danmaku_file())
