@@ -1,4 +1,4 @@
-# 服务器安全
+# 服务器安全修正
 
 在配置完成并跑了几周之后，根据维护人员反馈，对服务器增加了一些额外的安全配置。
 
@@ -45,7 +45,33 @@ sudo ufw allow from 2a06:98c0::/29 to any port 443 proto tcp comment Cloudflare
 sudo ufw allow from 2c0f:f248::/32 to any port 443 proto tcp comment Cloudflare
 ```
 
-执行完毕后应当就只能通过Cloudflare连接到站点了。
+执行完毕后应当就只能通过Cloudflare连接到站点了。当然，如果Cloudflare更新了他的IP列表，这里也都得跟着改，非常不便，所以这里介绍一下维护人员编写的Python脚本，可以自动获取IP地址列表并批量设置ufw。
+
+```python
+import requests
+import subprocess
+import re
+
+def run(args):
+    print(">", " ".join(args))
+    subprocess.run(args)
+
+for line in subprocess.run(["ufw", "status"], stdout=subprocess.PIPE).stdout.decode().split("\n"):
+    if "Cloudflare" not in line:
+        continue
+    print(line)
+    cidr_ptn = re.compile(r'[0-9\.a-f:]+/[0-9]+')
+    for entry in line.strip().split(" "):
+        if not cidr_ptn.match(entry):
+            continue
+        run("ufw delete allow from".split(" ") + [entry] + "to any port 443 proto tcp".split(" "))
+
+ips = requests.get("https://www.cloudflare.com/ips-v4/").text.strip().split("\n") + requests.get("https://www.cloudflare.com/ips-v6/").text.strip().split("\n")
+for ip in ips:
+    run("ufw allow from".split(" ") + [ip] + 'to any port 443 proto tcp comment Cloudflare'.split(" "))
+
+run("ufw status".split(" "))
+```
 
 ### 方案二
 
