@@ -322,6 +322,7 @@ server {
 * `league/flysystem-aws-s3-v3:"1.*"`：以AWS S3协议存储用户上传的文件。
 * `the-turk/flarum-stickiest:"^3.0.0"`：超级置顶，解决Flarum默认置顶看完之后会不在第一位的设计问题。
 * `clarkwinkelmann/flarum-ext-emojionearea`：表情选项器。
+* `swaggymacro/only-starter`：只看楼主
 * `wvbdev/tieba-stickers`：贴吧表情。
 * `meilisearch/meilisearch-php:"0.23.*"`：Meilisearch插件的依赖
 * `clarkwinkelmann/flarum-ext-scout`：Meilisearch插件
