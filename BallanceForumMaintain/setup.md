@@ -317,6 +317,7 @@ server {
 * `fof/polls:"*"`：投票。
 * `fof/filter:"*"`：违禁词屏蔽。
 * `fof/linguist`：多语言翻译插件。有些时候默认的翻译并不总是令人满意，或者某些地方没有被翻译，可以通过这个插件修改。
+* `fof/user-directory:"^1.4.1"`：用户列表（由于默认权限太Root了，可以看到后台管理界面并进行任意操作。而管理员觉得没有后台界面那个用户列表，管理用户起来很麻烦，所以要求加这个插件来搜用户，并限制给只有大小吧可以看）。
 * `ziiven/flarum-post-number`：楼层号码显示
 * `pipecraft/flarum-ext-id-slug`：以ID显示帖子链接，而不是文字。
 * `league/flysystem-aws-s3-v3:"1.*"`：以AWS S3协议存储用户上传的文件。
@@ -327,6 +328,7 @@ server {
 * `meilisearch/meilisearch-php:"0.23.*"`：Meilisearch插件的依赖
 * `clarkwinkelmann/flarum-ext-scout`：Meilisearch插件
 * `antoinefr/flarum-ext-money`：站内货币功能
+* `ziiven/flarum-money-leaderboard`：站内货币排行榜（看看谁水的最多？）
 * `ziiven/flarum-daily-check-in`：每日签到
 
 # 安装Certbot
