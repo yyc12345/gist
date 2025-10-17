@@ -330,6 +330,7 @@ server {
 * `antoinefr/flarum-ext-money`：站内货币功能
 * `ziiven/flarum-money-leaderboard`：站内货币排行榜（看看谁水的最多？）
 * `ziiven/flarum-daily-check-in`：每日签到
+* `v17development/flarum-user-badges`：用户徽章
 
 # 安装Certbot
 
