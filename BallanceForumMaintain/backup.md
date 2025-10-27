@@ -3,8 +3,9 @@
 根据服务器维护人员要求，为了确保论坛数据的绝对安全，今后希望可以定时将论坛数据进行备份。论坛维护人员提出了几点要求：
 
 1. 定时将全部论坛数据备份成一个tar包并压缩。
-2. 提供一个JSON格式的清单文件来表示这个tar包的基本信息（例如SHA256摘要，和创建时间等）
-3. 打开一个仅允许他自己的服务器连接的HTTP服务，他通过轮询机制同步论坛数据到另一个具有更大硬盘的服务器上。
+1. 用户上传文件和其他数据需要分别打成两个包，因为用户上传的数据会随着时间增长而变得很大。
+1. 提供一个JSON格式的清单文件来表示这个tar包的基本信息（例如SHA256摘要，和创建时间等）
+1. 打开一个仅允许他自己的服务器连接的HTTP服务，他通过轮询机制同步论坛数据到另一个具有更大硬盘的服务器上。
 
 根据这些要求，我们设计了接下来的备份流程。
 
@@ -51,11 +52,13 @@ set -euo pipefail
 # 配置变量
 BACKUP_DIR="/var/www/flarum_backups"
 BACKUP_ARCHIVE_NAME="flarum_backup.tar.xz"
+BACKUP_UPLOAD_ARCHIVE_NAME="flarum_upload_backup.tar.xz"
 BACKUP_MANIFEST_NAME="flarum_backup.json"
 BACKUP_ARCHIVE_PASSWORD="VeryStrongPassword"
 MYSQL_USER="flarum_dumper"
 MYSQL_PASSWORD="VeryStrongPassword"
 MYSQL_DATABASE="flarum"
+FLARUM_UPLOAD_RELATIVE_DIR="public/assets/files"
 FLARUM_DATA_DIR="/var/www/flarum"
 MEILISEARCH_DATA_DIR="/var/lib/meilisearch"
 
@@ -96,9 +99,12 @@ echo "链接Flarum数据..."
 ln -s "$FLARUM_DATA_DIR" "$TEMP_DIR/flarum/data"
 
 # 创建压缩包并加密
+# -c指令表示压缩。-h指令表示跟随软链接打包所有文件。--exclude用于把用户上传文件排除，单独备份
 echo "创建压缩且加密的存档..."
-# -c指令表示压缩。-h指令表示跟随软链接打包所有文件。
-tar -ch -C "$TEMP_DIR" . | xz -6 --threads=0 | openssl enc -aes-256-cbc -pbkdf2 -pass pass:$BACKUP_ARCHIVE_PASSWORD -out "${BACKUP_DIR}/${BACKUP_ARCHIVE_NAME}"
+echo "创建服务器基本存档..."
+tar -ch -C "$TEMP_DIR" --exclude="flarum/data/$FLARUM_UPLOAD_RELATIVE_DIR" . | xz -6 --threads=0 | openssl enc -aes-256-cbc -pbkdf2 -pass pass:$BACKUP_ARCHIVE_PASSWORD -out "${BACKUP_DIR}/${BACKUP_ARCHIVE_NAME}"
+echo "创建服务器上传文件存档..."
+tar -ch -C "$TEMP_DIR/flarum/data/$FLARUM_UPLOAD_RELATIVE_DIR" . | xz -6 --threads=0 | openssl enc -aes-256-cbc -pbkdf2 -pass pass:$BACKUP_ARCHIVE_PASSWORD -out "${BACKUP_DIR}/${BACKUP_UPLOAD_ARCHIVE_NAME}"
 
 # 生成备份描述文件
 # sha256sum会以名为FIPS-180-2的格式输出，形似07f2b5a17427064a4dc9f1ef59f853cace91eeb5662da6bf83813e38be97f971 *FAQ.md
@@ -106,20 +112,23 @@ tar -ch -C "$TEMP_DIR" . | xz -6 --threads=0 | openssl enc -aes-256-cbc -pbkdf2 
 echo "生成存档描述文件..."
 TIMESTAMP=$(date +%s)
 DIGEST=$(sha256sum "${BACKUP_DIR}/${BACKUP_ARCHIVE_NAME}" | cut -d' ' -f1)
+UPLOAD_DIGEST=$(sha256sum "${BACKUP_DIR}/${BACKUP_UPLOAD_ARCHIVE_NAME}" | cut -d' ' -f1)
 # 直接拼接JSON输出
 cat > "${BACKUP_DIR}/${BACKUP_MANIFEST_NAME}" << EOF
 {
 	"timestamp": $TIMESTAMP,
-	"digest": "$DIGEST"
+	"digest": "$DIGEST",
+	"upload_digest": "$UPLOAD_DIGEST"
 }
 EOF
 
 echo "Ballance论坛系统备份完成"
-echo "存档文件: ${BACKUP_DIR}/${BACKUP_ARCHIVE_NAME}"
+echo "基本存档文件: ${BACKUP_DIR}/${BACKUP_ARCHIVE_NAME}"
+echo "用户上传存档文件: ${BACKUP_DIR}/${BACKUP_UPLOAD_ARCHIVE_NAME}"
 echo "存档描述文件: ${BACKUP_DIR}/${BACKUP_MANIFEST_NAME}"
 ```
 
-编写完成后，需要记得替换文件开头的那些变量的值。然后可以尝试运行一次，确定可以运行。
+编写完成后，需要记得替换文件开头的那些变量的值。然后可以尝试运行一次，确定可以运行。对于备份出的两个存档文件，可以使用命令：`openssl enc -aes-256-cbc -pbkdf2 -d -pass pass:$BACKUP_ARCHIVE_PASSWORD -in "${BACKUP_DIR}/${BACKUP_ARCHIVE_NAME}" | xz -d --threads=0 | tar -xf - -C "."`将包解密解压缩到当前文件夹下。两个包按照其相对路径进行组合即可还原全部数据。
 
 ## Systemd服务
 
@@ -199,6 +208,11 @@ server {
             alias /var/www/flarum_backups/flarum_backup.tar.xz;
             default_type application/octet-stream;
             add_header Content-Disposition "attachment; filename=flarum_backup.tar.xz";
+        }
+        location = /flarum_upload_backup.tar.xz {
+            alias /var/www/flarum_backups/flarum_upload_backup.tar.xz;
+            default_type application/octet-stream;
+            add_header Content-Disposition "attachment; filename=flarum_upload_backup.tar.xz";
         }
 
         location = /flarum_backup.json {
