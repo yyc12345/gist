@@ -172,7 +172,7 @@ RandomizedDelaySec=3600
 WantedBy=timers.target
 ```
 
-其中，`Mon,Thu *-*-* 04:00:00 Asia/Shanghai`表示在每周一和每周四的UTF+8的凌晨4点进行定时器操作。由于Systemd的设计，做不到每隔N天备份一次这种定时操作，只能如此。选择这两个时间点是考虑正常情况下，周末较为活跃，以及UTF+8凌晨四点人数较少的情况。
+其中，`Mon,Thu *-*-* 04:00:00 Asia/Shanghai`表示在每周一和每周四的UTC+8的凌晨4点进行定时器操作。由于Systemd的设计，做不到每隔N天备份一次这种定时操作，只能如此。选择这两个时间点是考虑正常情况下，周末较为活跃，以及UTC+8凌晨四点人数较少的情况。
 
 ### 启用定时器
 
@@ -254,7 +254,7 @@ sudo ufw allow from 16.16.16.16 to any port 6145 proto tcp comment Flarum-Backup
 ## 前置操作
 
 如果是迁移服务器，则需要先按配置部分安装必要的软件并测试可以正常工作。
-如果是回滚现有服务器，则需要给损坏数据也备份一下，万一这些损坏的诗句还能用呢？总比直接删了浩。
+如果是回滚现有服务器，则需要给损坏数据也备份一下，万一这些损坏的数据还能用呢？总比直接删了好。
 
 ## 展开压缩包
 
@@ -269,4 +269,4 @@ sudo ufw allow from 16.16.16.16 to any port 6145 proto tcp comment Flarum-Backup
 
 ## 还原其他数据
 
-Flarum本体和Meilisearch的数据复制到位即可，额外的，可能需要使用`chown`等命令更改所有者。
+Flarum本体和Meilisearch的数据复制到位即可，额外的，可能需要使用`chown`和`chmod`等命令更改所有者和权限。
