@@ -128,7 +128,7 @@ echo "用户上传存档文件: ${BACKUP_DIR}/${BACKUP_UPLOAD_ARCHIVE_NAME}"
 echo "存档描述文件: ${BACKUP_DIR}/${BACKUP_MANIFEST_NAME}"
 ```
 
-编写完成后，需要记得替换文件开头的那些变量的值。然后可以尝试运行一次，确定可以运行。对于备份出的两个存档文件，可以使用命令：`openssl enc -aes-256-cbc -pbkdf2 -d -pass pass:$BACKUP_ARCHIVE_PASSWORD -in "${BACKUP_DIR}/${BACKUP_ARCHIVE_NAME}" | xz -d --threads=0 | tar -xf - -C "."`将包解密解压缩到当前文件夹下。两个包按照其相对路径进行组合即可还原全部数据。
+编写完成后，需要记得替换文件开头的那些变量的值。然后可以尝试运行一次，确定可以运行。
 
 ## Systemd服务
 
@@ -246,3 +246,27 @@ server {
 # 允许指定 IP 访问 6145 端口
 sudo ufw allow from 16.16.16.16 to any port 6145 proto tcp comment Flarum-Backup
 ```
+
+# 后期还原
+
+既然有了备份，那必然有还原。无论是迁移到新的服务器还是旧服务器爆炸了需要使用备份回滚（确实爆炸了），都需要知道如何利用我们备份好的数据。
+
+## 前置操作
+
+如果是迁移服务器，则需要先按配置部分安装必要的软件并测试可以正常工作。
+如果是回滚现有服务器，则需要给损坏数据也备份一下，万一这些损坏的诗句还能用呢？总比直接删了浩。
+
+## 展开压缩包
+
+对于备份出的两个存档文件，可以使用命令：`openssl enc -aes-256-cbc -pbkdf2 -d -pass pass:$BACKUP_ARCHIVE_PASSWORD -in "${BACKUP_DIR}/${BACKUP_ARCHIVE_NAME}" | xz -d --threads=0 | tar -xf - -C "."`将包解密解压缩到当前文件夹下。两个包按照其相对路径进行组合即可还原全部数据。
+
+## 还原MySQL数据库
+
+使用命令`mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" < flarum_dump.sql`还原MySQL数据库，其中`flarum_dump.sql`是备份包中的MySQL导出数据。
+
+如果数据库中有同名数据库，需要使用`DROP DATABASE IF EXISTS flarum;`指令提前删除以阻止任何潜在的错误。
+不建议使用导出数据的用户来登录数据库，建议用root登录数据库进行操作（使用root登陆时可能也不需要密码，因为MySQL的本地策略），以避免权限不足（因为导出数据用户被设计为只能读取并导出数据，并不能写入数据）。
+
+## 还原其他数据
+
+Flarum本体和Meilisearch的数据复制到位即可，额外的，可能需要使用`chown`等命令更改所有者。
