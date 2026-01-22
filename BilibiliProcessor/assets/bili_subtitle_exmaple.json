@@ -1,0 +1,308 @@
+{
+  "font_size": 0.4,
+  "font_color": "#FFFFFF",
+  "background_alpha": 0.5,
+  "background_color": "#9C27B0",
+  "Stroke": "none",
+  "type": "AIsubtitle",
+  "lang": "zh",
+  "version": "v1.5.0.4",
+  "body": [
+    {
+      "from": 0.12,
+      "to": 3.72,
+      "sid": 1,
+      "location": 2,
+      "content": "首先欢迎大家来到我的blender视频教程",
+      "music": 0.0
+    },
+    {
+      "from": 3.72,
+      "to": 6.3,
+      "sid": 2,
+      "location": 2,
+      "content": "我是y y c12345 ",
+      "music": 0.0
+    },
+    {
+      "from": 6.32,
+      "to": 9.219,
+      "sid": 3,
+      "location": 2,
+      "content": "那么在开始这个视频之前呢",
+      "music": 0.0
+    },
+    {
+      "from": 9.219,
+      "to": 11.199,
+      "sid": 4,
+      "location": 2,
+      "content": "我仍然需要强调的是",
+      "music": 0.0
+    },
+    {
+      "from": 11.199,
+      "to": 14.049,
+      "sid": 5,
+      "location": 2,
+      "content": "这个视频面向的不是制图新手",
+      "music": 0.0
+    },
+    {
+      "from": 14.049,
+      "to": 16.72,
+      "sid": 6,
+      "location": 2,
+      "content": "而是有一定制图经验的人",
+      "music": 0.0
+    },
+    {
+      "from": 16.72,
+      "to": 18.19,
+      "sid": 7,
+      "location": 2,
+      "content": "如果你是新手",
+      "music": 0.0
+    },
+    {
+      "from": 18.19,
+      "to": 21.97,
+      "sid": 8,
+      "location": 2,
+      "content": "那么我不建议你直接按照此视频进行制度",
+      "music": 0.0
+    },
+    {
+      "from": 21.97,
+      "to": 25.91,
+      "sid": 9,
+      "location": 2,
+      "content": "您需要先阅读一些其他的制图教程",
+      "music": 0.0
+    },
+    {
+      "from": 25.91,
+      "to": 27.98,
+      "sid": 10,
+      "location": 2,
+      "content": "了解一些基本的概念后",
+      "music": 0.0
+    },
+    {
+      "from": 27.98,
+      "to": 28.22,
+      "sid": 11,
+      "location": 2,
+      "content": "才",
+      "music": 0.0
+    },
+    {
+      "from": 28.22,
+      "to": 32.34,
+      "sid": 12,
+      "location": 2,
+      "content": "能够通过本视频制作出一张合格的巴拉斯地图",
+      "music": 0.0
+    },
+    {
+      "from": 32.34,
+      "to": 33.06,
+      "sid": 13,
+      "location": 2,
+      "content": "文字",
+      "music": 0.0
+    },
+    {
+      "from": 33.06,
+      "to": 36.18,
+      "sid": 14,
+      "location": 2,
+      "content": "上一个blender视频已经过去了2年半了",
+      "music": 0.0
+    },
+    {
+      "from": 36.18,
+      "to": 40.11,
+      "sid": 15,
+      "location": 2,
+      "content": "试图插件在此期间进行了很多调整",
+      "music": 0.0
+    },
+    {
+      "from": 40.11,
+      "to": 41.79,
+      "sid": 16,
+      "location": 2,
+      "content": "需要做一些增补",
+      "music": 0.0
+    },
+    {
+      "from": 41.79,
+      "to": 44.78,
+      "sid": 17,
+      "location": 2,
+      "content": "对过去所做的一些疏漏进行修整",
+      "music": 0.0
+    },
+    {
+      "from": 44.78,
+      "to": 48.73,
+      "sid": 18,
+      "location": 2,
+      "content": "那么在上一个视频如同ppt赘述的",
+      "music": 0.0
+    },
+    {
+      "from": 48.73,
+      "to": 50.47,
+      "sid": 19,
+      "location": 2,
+      "content": "制图历史的内容",
+      "music": 0.0
+    },
+    {
+      "from": 50.47,
+      "to": 52.87,
+      "sid": 20,
+      "location": 2,
+      "content": "本期就不再进行叙述了",
+      "music": 0.0
+    },
+    {
+      "from": 52.87,
+      "to": 55.879,
+      "sid": 21,
+      "location": 2,
+      "content": "本期将着重于向您讲述",
+      "music": 0.0
+    },
+    {
+      "from": 55.879,
+      "to": 59.419,
+      "sid": 22,
+      "location": 2,
+      "content": "如何制作一张现代的boss地图",
+      "music": 0.0
+    },
+    {
+      "from": 59.419,
+      "to": 62.329,
+      "sid": 23,
+      "location": 2,
+      "content": "由blender制作的地图",
+      "music": 0.0
+    },
+    {
+      "from": 62.329,
+      "to": 65.11,
+      "sid": 24,
+      "location": 2,
+      "content": "首先就是斯卡布罗集市",
+      "music": 0.0
+    },
+    {
+      "from": 65.11,
+      "to": 68.89,
+      "sid": 25,
+      "location": 2,
+      "content": "然而布兰德制图技术在那时并不完善",
+      "music": 0.0
+    },
+    {
+      "from": 68.89,
+      "to": 72.31,
+      "sid": 26,
+      "location": 2,
+      "content": "斯卡布罗集市中出现了很多不成熟的问题",
+      "music": 0.0
+    },
+    {
+      "from": 72.31,
+      "to": 77.35,
+      "sid": 27,
+      "location": 2,
+      "content": "比如说钢轨翻面法线错乱以及顶点过多的问题",
+      "music": 0.0
+    },
+    {
+      "from": 77.35,
+      "to": 80.29,
+      "sid": 28,
+      "location": 2,
+      "content": "这些问题在一些吧友直播玩此图时",
+      "music": 0.0
+    },
+    {
+      "from": 80.29,
+      "to": 82.75,
+      "sid": 29,
+      "location": 2,
+      "content": "已经有许多人在弹幕中指出来了",
+      "music": 0.0
+    },
+    {
+      "from": 82.75,
+      "to": 84.56,
+      "sid": 30,
+      "location": 2,
+      "content": "但是布兰德制图技术",
+      "music": 0.0
+    },
+    {
+      "from": 84.56,
+      "to": 88.19,
+      "sid": 31,
+      "location": 2,
+      "content": "在制作要素超载这张图的时候就已经很成熟了",
+      "music": 0.0
+    },
+    {
+      "from": 88.19,
+      "to": 93.3,
+      "sid": 32,
+      "location": 2,
+      "content": "插件在那个时候已经是基本可以用于制作一张",
+      "music": 0.0
+    },
+    {
+      "from": 93.3,
+      "to": 95.1,
+      "sid": 33,
+      "location": 2,
+      "content": "比较正式的balance地图了",
+      "music": 0.0
+    },
+    {
+      "from": 95.1,
+      "to": 97.0,
+      "sid": 34,
+      "location": 2,
+      "content": "那么既然讲到布兰德制图",
+      "music": 0.0
+    },
+    {
+      "from": 97.0,
+      "to": 99.67,
+      "sid": 35,
+      "location": 2,
+      "content": "那我们就需要讲到老生常谈的问题",
+      "music": 0.0
+    },
+    {
+      "from": 99.67,
+      "to": 102.1,
+      "sid": 36,
+      "location": 2,
+      "content": "他跟3d max相比有什么优势",
+      "music": 0.0
+    },
+    {
+      "from": 102.1,
+      "to": 103.82,
+      "sid": 37,
+      "location": 2,
+      "content": "或者说有什么缺点呢",
+      "music": 0.0
+    }
+  ]
+}
