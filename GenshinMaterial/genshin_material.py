@@ -22,6 +22,12 @@ class ExpectedPreset(enum.Enum):
     WeaponMobLv90 = '五星武器Lv 90大世界普通怪素材'
     WeaponEliteMobLv80 = '五星武器Lv 80大世界精英怪素材'
     WeaponEliteMobLv90 = '五星武器Lv 90大世界精英怪素材'
+    InferiorWeaponBookLv80 = '四星武器Lv 80武器书'
+    InferiorWeaponBookLv90 = '四星武器Lv 90武器书'
+    InferiorWeaponMobLv80 = '四星武器Lv 80大世界普通怪素材'
+    InferiorWeaponMobLv90 = '四星武器Lv 90大世界普通怪素材'
+    InferiorWeaponEliteMobLv80 = '四星武器Lv 80大世界精英怪素材'
+    InferiorWeaponEliteMobLv90 = '四星武器Lv 90大世界精英怪素材'
 EXPECTED_PRESET_LIST: list[str] = list(
     map(lambda x: x.value, ExpectedPreset)
 )
@@ -44,6 +50,12 @@ EXPECTED_PRESET_DICT: dict[ExpectedPreset, tuple[int, int, int, int, int]] = {
     ExpectedPreset.WeaponMobLv90: (15, 23, 27, 0, 0),
     ExpectedPreset.WeaponEliteMobLv80: (23, 27, 14, 0, 0),
     ExpectedPreset.WeaponEliteMobLv90: (23, 27, 41, 0, 0),
+    ExpectedPreset.InferiorWeaponBookLv80: (0, 3, 9, 9, 0),
+    ExpectedPreset.InferiorWeaponBookLv90: (0, 3, 9, 9, 4),
+    ExpectedPreset.InferiorWeaponMobLv80: (10, 15, 6, 0, 0),
+    ExpectedPreset.InferiorWeaponMobLv90: (10, 15, 18, 0, 0),
+    ExpectedPreset.InferiorWeaponEliteMobLv80: (15, 18, 9, 0, 0),
+    ExpectedPreset.InferiorWeaponEliteMobLv90: (15, 18, 27, 0, 0),
 }
 
 IMG_FILENAME: tuple[str, str, str, str] = (
