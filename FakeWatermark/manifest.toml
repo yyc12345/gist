@@ -1,0 +1,55 @@
+# ============================================================================
+# fake-watermark manifest
+#
+# This file defines the content of the fake camera watermark. Every field is
+# required -- remove nothing, just adjust the values to fit your needs.
+# ============================================================================
+
+# --- [camera] section -------------------------------------------------------
+# All fields in this section are required.
+[camera]
+
+# Capture time of the photo. It is shown on the watermark bar and also written
+# into the EXIF DateTimeOriginal / CreateDate / ModifyDate tags.
+# Format: "YYYY-MM-DD HH:MM:SS"
+capture_time = "2025-07-18 14:32:05"
+
+# Brand of the "fake" camera. Written to the EXIF Make tag.
+brand = "Xiaomi"
+
+# Model of the "fake" camera. Written to the EXIF Model tag.
+model = "Xiaomi 12S Ultra"
+
+# Focal length, written as-is on the watermark bar and to the EXIF
+# FocalLength tag.
+focal_length = "6.6mm"
+
+# Aperture value, written as-is on the watermark bar and to the EXIF FNumber
+# tag.
+aperture = "F4.1"
+
+# Exposure time, written as-is on the watermark bar and to the EXIF
+# ExposureTime tag.
+exposure_time = "1/100s"
+
+# ISO value, written as-is on the watermark bar and to the EXIF ISO tag.
+iso = "ISO90"
+
+# Geographic location in DMS (degrees/minutes/seconds). Shown on the watermark
+# bar and parsed into the EXIF GPSLatitude / GPSLongitude tags.
+# Format: "<lat><N|S> <lon><E|W>", e.g. 40°3'13"N 116°19'25"E
+location = "40°3'13\"N 116°19'25\"E"
+
+# --- [frame] section --------------------------------------------------------
+# All fields in this section are required.
+[frame]
+
+# Path to the logo image shown on the left side of the bottom bar. If this is a
+# relative path it is resolved against the directory of this manifest file.
+logo_path = "logo.png"
+
+# Path to the TrueType font (.ttf) used to render the text on the bottom bar.
+# If this is a relative path it is resolved against the directory of this
+# manifest file. When the file is missing or invalid, a bundled/system default
+# font is used instead.
+font_path = "SourceHanSansCN-Normal.otf"
