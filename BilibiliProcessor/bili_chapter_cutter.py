@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from dataclasses import dataclass
 from tabulate import tabulate
+from bili_common import safe_wrap_cmd_path, sanitize_name
 
 # region: Extractor
 
@@ -143,16 +144,17 @@ def extract_chapter(filename: Path, style: ChapterStyle) -> list[ChapterInfo]:
 
 # region: Render
 
-def render_ffmpeg_cmd(chapters: tuple[ChapterInfo, ...]) -> None:
+def render_ffmpeg_cmd(input_file: Path, output_dir: Path, chapters: tuple[ChapterInfo, ...]) -> None:
     print('===== FFMPEG Commands =====')
+    input_audio = safe_wrap_cmd_path(input_file)
     for chapter in chapters:
-        sb: str = "ffmpeg -i audio.m4s "
-        if chapter.start_timestamp is not None:
-            sb += f'-ss {chapter.start_timestamp} '
-        if chapter.end_timestamp is not None:
-            sb += f'-to {chapter.end_timestamp} '
-        sb += f'-vn "{chapter.name}.m4a"'
-        print(sb)
+        output_audio = safe_wrap_cmd_path(output_dir / f"{chapter.name}.m4a")
+        start_seg = f"-ss {chapter.start_timestamp}" if chapter.start_timestamp is not None else ""
+        end_seg = f"-to {chapter.end_timestamp}" if chapter.end_timestamp is not None else ""
+        # YYC MARK:
+        # We put `-ss` and `-to` after `-i` to make it as "precious" locating in audio.
+        # `-c:a aac` to use AAC codec and `-b:a 128k` to specify bitrate to 128k for Bilibili common audio bitrate.
+        print(f"ffmpeg -i {input_audio} {start_seg} {end_seg} -vn -c:a aac -b:a 128k {output_audio}")
 
 # endregion
 
@@ -163,7 +165,11 @@ class Options:
     """The class representing accepted command line options."""
 
     input_file: Path
-    """The path to input file."""
+    """The path to input file for cutting."""
+    output_dir: Path
+    """The path to output directory for storing cut clips."""
+    chapter_file: Path
+    """The path to chapter file instructing how to cut input file."""
     style: ChapterStyle
     """The style of input chapter file."""
 
@@ -175,11 +181,19 @@ def parse() -> Options:
     )
 
     parser.add_argument(
-        "-i", "--input", required=True, action="store", dest="input",
-        help="The path to input file."
+        "-i", "--input", required=True, action="store", dest="input", type=Path,
+        help="The path to input file for cutting."
     )
     parser.add_argument(
-        "-s", "--style", required=True, action="store", dest="style",
+        "-o", "--output", required=True, action="store", dest="output", type=Path,
+        help="The path to output directory for storing cut clips."
+    )
+    parser.add_argument(
+        "-c", "--chapter", required=True, action="store", dest="chapter", type=Path,
+        help="The path to chapter file instructing how to cut input file."
+    )
+    parser.add_argument(
+        "-s", "--style", required=True, action="store", dest="style", type=ChapterStyle,
         help='''
         The style of input chapter file.
         The valid value is "range" for time range style, or "point" for time point style.
@@ -187,7 +201,7 @@ def parse() -> Options:
     )
 
     args = parser.parse_args()
-    return Options(Path(args.input), ChapterStyle(args.style))
+    return Options(args.input, args.output, args.chapter, args.style)
 
 # endregion
 
@@ -196,7 +210,11 @@ def main() -> None:
     cli = parse()
 
     # fetch all chapters
-    chapters = tuple(extract_chapter(cli.input_file, cli.style))
+    chapters = tuple(extract_chapter(cli.chapter_file, cli.style))
+
+    # sanitize each name before following process
+    for chapter in chapters:
+        chapter.name = sanitize_name(chapter.name)
 
     # show result in console
     print('===== Found Chapters =====')
@@ -212,7 +230,7 @@ def main() -> None:
     print('')
 
     # render result
-    render_ffmpeg_cmd(chapters)
+    render_ffmpeg_cmd(cli.input_file, cli.output_dir, chapters)
 
 
 if __name__ == '__main__':

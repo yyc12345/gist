@@ -5,6 +5,7 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional, Iterator, ClassVar, Any
 from tabulate import tabulate
+from bili_common import safe_wrap_cmd_path, sanitize_name
 
 # region: Video Enumeration
 
@@ -129,11 +130,6 @@ class EpisodeProperties:
 
 class Episode():
     """The class representing a complete episode."""
-    
-    TITLE_TRANS_TABLE: ClassVar[dict] = str.maketrans({
-        # File system disallowed
-        '\\': '', '/': '', ':': '', '*': '', '?': '', '"': '', '<': '', '>': '', '|': ''
-    })
 
     __properties: EpisodeProperties
     """The properties of this video delivered by enumerator."""
@@ -191,7 +187,7 @@ class Episode():
                 self.__download_quality = data['video_quality']
                 # get video title
                 video_title: str = data['title']
-                self.__video_title = video_title.translate(Episode.TITLE_TRANS_TABLE)
+                self.__video_title = sanitize_name(video_title)
 
                 # get part data
                 part_data = self.__get_part_data(data)
@@ -200,7 +196,7 @@ class Episode():
                 self.__height = part_data['height']
                 # get episode title
                 episode_title = self.__get_part_title(part_data)
-                self.__episode_title = episode_title.translate(Episode.TITLE_TRANS_TABLE)
+                self.__episode_title = sanitize_name(episode_title)
 
         # YYC MARK: Comment for developer checking exception
         except:
@@ -306,49 +302,39 @@ class Render:
         self.__out_dir = out_dir
         self.__id_prefix = id_prefix
 
-    CMD_PATH_TRANS_TABLE: ClassVar[dict] = str.maketrans({
-        '"': '\\"',     # escape double quote
-        '\\': '\\\\'    # escape back slash
-    })
-    """Translation table for escape path for Windows cmd arguments"""
-
-    def __safe_cmd_path(self, val: Path) -> str:
-        """Escape path for Windows cmd arguments"""
-        return f'"{str(val).translate(Render.CMD_PATH_TRANS_TABLE)}"'
-
     def __build_episode_title(self, episode: Episode) -> str:
         return episode.build_filename_title(self.__id_prefix)
 
     def generate_ffmpeg_cmd(self) -> None:
         print('===== FFMPEG Commands =====')
         for episode in self.__episodes:
-            input_video: str = self.__safe_cmd_path(episode.get_video_file())
-            input_audio: str = self.__safe_cmd_path(episode.get_audio_file())
-            output_av: str = self.__safe_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.mp4')
+            input_video: str = safe_wrap_cmd_path(episode.get_video_file())
+            input_audio: str = safe_wrap_cmd_path(episode.get_audio_file())
+            output_av: str = safe_wrap_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.mp4')
             print(f'ffmpeg -loglevel warning -hide_banner -i {input_audio} -i {input_video} -c:v copy -c:a copy {output_av}')
         print('')
 
     def generate_audio_only_win_copy(self) -> None:
         print('===== Audio-only Windows COPY Commands =====')
         for episode in self.__episodes:
-            input_audio: str = self.__safe_cmd_path(episode.get_audio_file())
-            output_a: str = self.__safe_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.aac')
+            input_audio: str = safe_wrap_cmd_path(episode.get_audio_file())
+            output_a: str = safe_wrap_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.aac')
             print(f'COPY /Y {input_audio} {output_a}')
         print('')
 
     def generate_audio_only_linux_cp(self) -> None:
         print('===== Audio-only Linux CP Commands =====')
         for episode in self.__episodes:
-            input_audio: str = self.__safe_cmd_path(episode.get_audio_file())
-            output_a: str = self.__safe_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.aac')
+            input_audio: str = safe_wrap_cmd_path(episode.get_audio_file())
+            output_a: str = safe_wrap_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.aac')
             print(f'cp -f {input_audio} {output_a}')
         print('')
 
     def generate_subtitle_cmd(self) -> None:
         print('===== Subtitle Commands =====')
         for episode in self.__episodes:
-            input_json: str = self.__safe_cmd_path(Path(f'{episode.get_title()}.json'))
-            output_srt: str = self.__safe_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.srt')
+            input_json: str = safe_wrap_cmd_path(Path(f'{episode.get_title()}.json'))
+            output_srt: str = safe_wrap_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.srt')
             print(f'py bili_srt_conv.py -i {input_json} -o {output_srt}')
         print('')
 
@@ -358,8 +344,8 @@ class Render:
         for episode in filter(lambda i: i.has_danmaku_file(), self.__episodes):
             x: str = str(episode.get_width())
             y: str = str(episode.get_height())
-            input_xml: str = self.__safe_cmd_path(episode.get_danmaku_file())
-            output_ass: str = self.__safe_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.ass')
+            input_xml: str = safe_wrap_cmd_path(episode.get_danmaku_file())
+            output_ass: str = safe_wrap_cmd_path(self.__out_dir / f'{self.__build_episode_title(episode)}.ass')
             print(f'DanmakuFactory -o ass {output_ass} -i xml {input_xml} -x {x} -y {y} --fontsize 38 --fontname "Source Han Sans"')
         print('')
 
