@@ -12,8 +12,9 @@
 
 ## 搭建论坛
 
-参加[Setup](./setup.md)
+参见[Setup](./setup.md)
 
 ## Bug修复
 
-参加[Bugfix](./bugfix.md)
+参见[Bugfix](./bugfix.md)和[CVE-2026-109618/619修复](./cve.md)
+
